@@ -14,6 +14,16 @@ capybara-*.html
 **.orig
 rerun.txt
 pickle-email-*.html
+# Android temp and machine-local files
+*.apk
+*.ap_
+*.dex
+*.class
+bin/
+gen/
+local.properties
+build.xml
+# vim temp files
 *.swp
 *.swo
 *.vim
