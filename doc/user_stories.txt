@@ -1,0 +1,17 @@
+As a bitcoin day trader, I want a full-screen live chart of the price so I can
+keep an eye on it at all times.  It would be even better if it popped up
+whenever I plugged my device in.
+
+I'm waiting for a good price before I buy my bitcoins.  A notification when the
+price drops below a certain point would be helpful.
+
+I like to keep a subconscious eye on the bitcoin price.  Homescreen widgets
+with price numbers or recent charts help me do that without thinking about it
+too much.
+
+I don't trade every day, but I use bitcoin as a mid to long term investment
+vehicle.  Simple statistical reports on bitcoin over the last day, week, and
+month would help me make informed decisions.
+
+I'm curious about bitcoin and enjoy following it loosely.  A quick and simple
+price viewing program is all I need.
