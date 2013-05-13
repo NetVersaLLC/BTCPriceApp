@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright 2013 NetVersa LLC
+-->
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- common styles -->
+
+    <style name="theme">
+        <item name="android:windowBackground">@color/background</item>
+    </style>
+    <style name="root_scrollview">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+    </style>
+    <style name="root_linearlayout">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:padding">12dp</item>
+        <item name="android:gravity">center</item>
+    </style>
+    <style name="horizontal_separator">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">2dp</item>
+        <item name="android:layout_marginTop">16dp</item>
+        <item name="android:layout_marginBottom">16dp</item>
+        <item name="android:layout_marginLeft">8dp</item>
+        <item name="android:layout_marginRight">8dp</item>
+        <item name="android:background">@color/border</item>
+    </style>
+
+    <!-- market_data_activity -->
+    <style name="headline_price">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textSize">80sp</item>
+        <item name="android:singleLine">true</item>
+    </style>
+    <style
+        name="headline_currency"
+        parent="@style/headline_price"
+        >
+        <item name="android:textSize">30sp</item>
+    </style>
+    <style name="high_price">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginLeft">16sp</item>
+        <item name="android:gravity">left</item>
+        <item name="android:textSize">30sp</item>
+        <item name="android:textColor">@color/increase</item>
+        <item name="android:singleLine">true</item>
+    </style>
+    <style
+        name="low_price"
+        parent="@style/high_price"
+        >
+        <item name="android:textColor">@color/decrease</item>
+    </style>
+    <style name="volume">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginRight">16sp</item>
+        <item name="android:gravity">right</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:singleLine">true</item>
+    </style>
+</resources>
