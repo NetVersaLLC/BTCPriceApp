@@ -30,5 +30,8 @@
             style="@style/volume"
             android:text="Volume: 150329"
             />
+        <com.netversa.btcprice.CandlestickChartView
+            style="@style/candlestick_single"
+            />
     </LinearLayout>
 </ScrollView>
