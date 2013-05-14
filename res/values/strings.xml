@@ -4,4 +4,10 @@
 -->
 <resources>
     <string name="app_name">BTC Price</string>
+
+    <string name="price_dummy">--.--</string>
+    <string name="currency_pair_dummy">--/--</string>
+    <string name="high_price_dummy">▲ --.--</string>
+    <string name="low_price_dummy">▼ --.--</string>
+    <string name="volume_dummy">Volume: ---</string>
 </resources>
