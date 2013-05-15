@@ -1,7 +1,7 @@
 Simple URI scheme for requesting data from the fetch service.
 
 Used with an authority (//), the market can be explicitly set
-//mtgox/market/BTC/USD
+exchangedata://mtgox/market/BTC/USD
 
 Without an authority (/), the default market is queried
-/market/BTC/USD
+exchangedata:/market/BTC/USD
