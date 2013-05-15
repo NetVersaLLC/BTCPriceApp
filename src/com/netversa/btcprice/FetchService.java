@@ -7,6 +7,7 @@ import java.util.HashSet;
 
 import android.app.Service;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.IBinder;
 
 /** Class for fetching Market data decoupled from Activity lifestyles.
@@ -15,17 +16,14 @@ import android.os.IBinder;
  * because the user is rotating their phone is eliminated without having to
  * resort to ugly AsyncTask or configuration change hacks.
  *
- * Fetch actions are organized by target, which may be something along the
- * lines of 'market data for BTCUSD' but in a more structured format.
+ * Fetch actions are organized by target URI, which dictates where and what to
+ * fetch.
  *
  * If a target is requested for which a fetch is already in progress, that
  * request is ignored.
  */
 public class FetchService extends Service
 {
-    public static final String EXTRA_TARGET =
-        "com.netversa.btcprice.FETCH_TARGET";
-
     protected ActiveTargetSet activeTargets;
 
     @Override
@@ -37,7 +35,7 @@ public class FetchService extends Service
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
-        String target = intent.getStringExtra(EXTRA_TARGET);
+        Uri target = intent.getData();
         new Thread(new FetchRunnable(target)).start();
         return START_REDELIVER_INTENT;
     }
@@ -50,7 +48,7 @@ public class FetchService extends Service
 
     /** Get data from exchange and broadcast it to any interested parties
       */
-    protected void doFetch(String target)
+    protected void doFetch(Uri target)
     {
         // if there is no target to fetch, abort and shut down if appropriate
         if(target == null)
@@ -75,7 +73,7 @@ public class FetchService extends Service
 
     /** Mark a fetched target inactive and stop the service if necessary.
       */
-    protected void finalizeFetch(String target)
+    protected void finalizeFetch(Uri target)
     {
         synchronized(activeTargets)
         {
@@ -96,9 +94,9 @@ public class FetchService extends Service
       */
     protected class FetchRunnable implements Runnable
     {
-        protected String target;
+        protected Uri target;
 
-        public FetchRunnable(String target)
+        public FetchRunnable(Uri target)
         {
             this.target = target;
         }
@@ -112,9 +110,9 @@ public class FetchService extends Service
     /** Simple partially atomic extension of HashSet for keeping track of which
      * targets are actively being fetched.
      */
-    protected static class ActiveTargetSet extends HashSet<String>
+    protected static class ActiveTargetSet extends HashSet<Uri>
     {
-        public synchronized boolean testAndSet(String key)
+        public synchronized boolean testAndSet(Uri key)
         {
             if(contains(key))
             {
@@ -124,7 +122,7 @@ public class FetchService extends Service
             return true;
         }
 
-        public synchronized void unset(String key)
+        public synchronized void unset(Uri key)
         {
             remove(key);
         }
