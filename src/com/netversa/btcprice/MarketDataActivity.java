@@ -20,10 +20,10 @@ public class MarketDataActivity extends Activity
         setContentView(R.layout.market_data_activity);
 
         IntentFilter filter = new IntentFilter(FetchService.ACTION_RESPONSE);
-        filter.addDataScheme("exchangedata");
+        filter.addDataScheme(FetchService.DATA_SCHEME);
         registerReceiver(new FetchReceiver(), filter);
 
-        startService(new Intent(FetchService.ACTION_REQUEST, Uri.parse("exchangedata://mtgox/market/BTC/USD")));
+        startService(new Intent(FetchService.ACTION_REQUEST, Uri.parse("data://mtgox/market/BTC/USD")));
     }
 
     @Override

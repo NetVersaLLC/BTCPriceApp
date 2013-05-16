@@ -28,6 +28,7 @@ public class FetchService extends Service
         "com.netversa.btcprice.FETCH_REQUEST";
     public static final String ACTION_RESPONSE =
         "com.netversa.btcprice.FETCH_RESPONSE";
+    public static final String DATA_SCHEME = "data";
 
     protected ActiveTargetSet activeTargets;
 
