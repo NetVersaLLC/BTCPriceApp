@@ -30,7 +30,10 @@ public class FetchService extends Service
         "com.netversa.btcprice.ACTION_FETCH_RESPONSE";
     public static final String EXTRA_MARKET_DATA =
         "com.netversa.btcprice.EXTRA_MARKET_DATA";
+
     public static final String DATA_SCHEME = "data";
+    public static final String MARKET_DATA_URI_FORMAT = DATA_SCHEME +
+        "://%s/market/%s/%s";
 
     protected ActiveTargetSet activeTargets;
 
@@ -101,6 +104,14 @@ public class FetchService extends Service
             }
         }
         return;
+    }
+
+    // TODO overload with default exchange from SharedPrefs
+    public static Uri marketTarget(String exchange, String baseCurrency, String
+            counterCurrency)
+    {
+        return Uri.parse(String.format(MARKET_DATA_URI_FORMAT, exchange,
+                    baseCurrency, counterCurrency));
     }
 
     /** Runnable wrapper that does actual fetching in a thread.

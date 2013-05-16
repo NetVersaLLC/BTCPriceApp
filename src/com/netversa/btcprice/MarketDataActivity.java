@@ -11,6 +11,8 @@ import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Bundle;
 
+import com.xeiam.xchange.currency.Currencies;
+
 public class MarketDataActivity extends Activity
 {
     @Override
@@ -23,7 +25,9 @@ public class MarketDataActivity extends Activity
         filter.addDataScheme(FetchService.DATA_SCHEME);
         registerReceiver(new FetchReceiver(), filter);
 
-        startService(new Intent(FetchService.ACTION_REQUEST, Uri.parse("data://mtgox/market/BTC/USD")));
+        startService(new Intent(FetchService.ACTION_REQUEST,
+                    FetchService.marketTarget(MarketData.MT_GOX, Currencies.USD,
+                        Currencies.BTC)));
     }
 
     @Override
