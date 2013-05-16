@@ -12,6 +12,10 @@ import android.os.Parcelable;
  */
 public class MarketData implements Parcelable
 {
+    public static final String MT_GOX = "mtgox";
+
+    public String exchangeName;
+
     public String baseCurrency;
     public String counterCurrency;
 
@@ -27,6 +31,9 @@ public class MarketData implements Parcelable
 
     public MarketData()
     {
+        exchangeName = "";
+        baseCurrency = "";
+        counterCurrency = "";
         timestamp = new Date();
     }
 
@@ -39,6 +46,8 @@ public class MarketData implements Parcelable
     @Override
     public void writeToParcel(Parcel out, int flags)
     {
+        out.writeString(exchangeName);
+
         out.writeString(baseCurrency);
         out.writeString(counterCurrency);
 
@@ -72,6 +81,8 @@ public class MarketData implements Parcelable
      };
      
      private MarketData(Parcel in) {
+         exchangeName = in.readString();
+
          baseCurrency = in.readString();
          counterCurrency = in.readString();
 
