@@ -25,9 +25,9 @@ import android.os.IBinder;
 public class FetchService extends Service
 {
     public static final String ACTION_REQUEST =
-        "com.netversa.btcprice.FETCH_REQUEST";
+        "com.netversa.btcprice.ACTION_FETCH_REQUEST";
     public static final String ACTION_RESPONSE =
-        "com.netversa.btcprice.FETCH_RESPONSE";
+        "com.netversa.btcprice.ACTION_FETCH_RESPONSE";
     public static final String DATA_SCHEME = "data";
 
     protected ActiveTargetSet activeTargets;
