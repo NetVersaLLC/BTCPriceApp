@@ -21,24 +21,26 @@ public class MarketDataActivity extends Activity
 
         IntentFilter filter = new IntentFilter(FetchService.ACTION_RESPONSE);
         filter.addDataScheme("exchangedata");
-        registerReceiver(new FetchReceiver(),
-                new IntentFilter(FetchService.ACTION_RESPONSE));
+        registerReceiver(new FetchReceiver(), filter);
+
+        startService(new Intent(FetchService.ACTION_REQUEST, Uri.parse("exchangedata://mtgox/market/BTC/USD")));
     }
 
     @Override
     public void onResume()
     {
         super.onResume();
-
-        startService(new Intent(FetchService.ACTION_REQUEST, Uri.parse("exchangedata://mtgox/market/BTC/USD")));
     }
 
     protected class FetchReceiver extends BroadcastReceiver
     {
         public void onReceive(Context context, Intent intent)
         {
-            System.out.println("Received " + intent.getData().toString());
-            unregisterReceiver(this);
+            if(!FetchService.ACTION_RESPONSE.equals(intent.getAction()) ||
+                        intent.getData() == null)
+            {
+                return;
+            }
         }
     }
 }

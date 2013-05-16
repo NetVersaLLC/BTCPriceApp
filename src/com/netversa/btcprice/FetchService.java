@@ -55,11 +55,9 @@ public class FetchService extends Service
       */
     protected void doFetch(Uri target)
     {
-        System.out.println("begin fetch");
         // if there is no target to fetch, abort and shut down if appropriate
         if(target == null)
         {
-            System.out.println("aborting fetch on null target");
             finalizeFetch(null);
             return;
         }
@@ -67,7 +65,6 @@ public class FetchService extends Service
         // only do any work if the work requested isn't already in progress
         if(!activeTargets.testAndSet(target))
         {
-            System.out.println("aborting duplicate concurrent fetch");
             finalizeFetch(null);
             return;
         }
@@ -76,7 +73,6 @@ public class FetchService extends Service
         // TODO Actual fetching action!
         //
 
-        System.out.println("responding with result");
         Intent resultIntent = new Intent(ACTION_RESPONSE, target);
         // TODO attach nice parcelable result
         sendBroadcast(resultIntent);
