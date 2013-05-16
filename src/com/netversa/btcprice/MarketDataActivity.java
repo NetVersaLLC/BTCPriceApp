@@ -15,11 +15,28 @@ import com.xeiam.xchange.currency.Currencies;
 
 public class MarketDataActivity extends Activity
 {
+    protected MarketData marketData;
+    // by when should we be hearing back from FetchService?
+    protected long expectResultsBy;
+
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.market_data_activity);
+
+        if(savedInstanceState != null)
+        {
+            marketData = (MarketData) savedInstanceState.getParcelable("marketData");
+            expectResultsBy = savedInstanceState.getLong("expectResultsBy");
+        }
+
+        // do we neither have market data nor expect incoming data?
+        if(marketData == null && expectResultsBy == 0)
+        {
+            // then let's fetch some
+            // TODO
+        }
 
         IntentFilter filter = new IntentFilter(FetchService.ACTION_RESPONSE);
         filter.addDataScheme(FetchService.DATA_SCHEME);
@@ -31,9 +48,12 @@ public class MarketDataActivity extends Activity
     }
 
     @Override
-    public void onResume()
+    public void onSaveInstanceState(Bundle savedInstanceState)
     {
-        super.onResume();
+        super.onSaveInstanceState(savedInstanceState);
+
+        savedInstanceState.putParcelable("marketData", marketData);
+        savedInstanceState.putLong("expectResultsBy", expectResultsBy);
     }
 
     protected class FetchReceiver extends BroadcastReceiver
