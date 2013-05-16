@@ -28,6 +28,8 @@ public class FetchService extends Service
         "com.netversa.btcprice.ACTION_FETCH_REQUEST";
     public static final String ACTION_RESPONSE =
         "com.netversa.btcprice.ACTION_FETCH_RESPONSE";
+    public static final String EXTRA_MARKET_DATA =
+        "com.netversa.btcprice.EXTRA_MARKET_DATA";
     public static final String DATA_SCHEME = "data";
 
     protected ActiveTargetSet activeTargets;
@@ -73,9 +75,10 @@ public class FetchService extends Service
         //
         // TODO Actual fetching action!
         //
+        MarketData result = new MarketData();
 
         Intent resultIntent = new Intent(ACTION_RESPONSE, target);
-        // TODO attach nice parcelable result
+        resultIntent.putExtra(EXTRA_MARKET_DATA, result);
         sendBroadcast(resultIntent);
 
         finalizeFetch(target);

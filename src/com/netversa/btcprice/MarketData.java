@@ -25,6 +25,11 @@ public class MarketData implements Parcelable
 
     public Date timestamp;
 
+    public MarketData()
+    {
+        timestamp = new Date();
+    }
+
     @Override
     public int describeContents()
     {
