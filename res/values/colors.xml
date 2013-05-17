@@ -3,7 +3,6 @@
   Copyright 2013 NetVersa LLC
 -->
 <resources>
-    <color name="background">#000000</color>
     <color name="border">#acacac</color>
     <color name="increase">#50c878</color>
     <color name="decrease">#e34234</color>
