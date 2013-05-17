@@ -19,8 +19,8 @@
         >
         <service android:name="FetchService">
             <intent-filter>
-                <action android:name="com.netversa.btcprice.FETCH_REQUEST"/>
-                <data android:scheme="exchangedata"/>
+                <action android:name="com.netversa.btcprice.ACTION_FETCH_REQUEST"/>
+                <data android:scheme="data"/>
             </intent-filter>
         </service>
         <activity
