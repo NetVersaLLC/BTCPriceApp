@@ -90,6 +90,19 @@ public class MarketDataActivity extends Activity
         {
             showError(getString(R.string.fetch_error_generic));
         }
+        priceView.setText(String.format(getString(R.string.price_format),
+                    marketData.lastPrice));
+        currencyView.setText(
+                String.format(getString(R.string.currency_pair_format),
+                    marketData.baseCurrency, marketData.counterCurrency));
+        highPriceView.setText(
+                String.format(getString(R.string.high_price_format),
+                    marketData.highPrice));
+        lowPriceView.setText(
+                String.format(getString(R.string.low_price_format),
+                    marketData.lowPrice));
+        volumeView.setText(String.format(getString(R.string.volume_format),
+                    marketData.volume));
     }
 
     /** Reveal the error view and show a message in it, or hide it.
@@ -126,6 +139,8 @@ public class MarketDataActivity extends Activity
                 return;
             }
             // TODO double-check data URI
+            marketData = (MarketData)
+                intent.getParcelableExtra(FetchService.EXTRA_MARKET_DATA);
             completeRefresh();
         }
     }

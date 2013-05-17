@@ -8,8 +8,13 @@
     <string name="fetch_error_generic">Update failed</string>
 
     <string name="price_dummy">--.--</string>
+    <string name="price_format" formatted="false">%.2f</string>
     <string name="currency_pair_dummy">--/--</string>
+    <string name="currency_pair_format" formatted="false">%s/%s</string>
     <string name="high_price_dummy">▲ --.--</string>
+    <string name="high_price_format" formatted="false">▲ %.2f</string>
     <string name="low_price_dummy">▼ --.--</string>
+    <string name="low_price_format" formatted="false">▼ %.2f</string>
     <string name="volume_dummy">Volume: ---</string>
+    <string name="volume_format" formatted="false">Volume: %.0f</string>
 </resources>
