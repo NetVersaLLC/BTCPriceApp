@@ -8,29 +8,35 @@
     >
     <LinearLayout style="@style/root_linearlayout">
         <TextView
+            android:id="@+id/price"
             style="@style/headline_price"
             android:text="@string/price_dummy"
             />
         <TextView
+            android:id="@+id/currency"
             style="@style/headline_currency"
             android:layout_marginTop="-16dp"
             android:text="@string/currency_pair_dummy"
             />
         <View style="@style/horizontal_separator"/>
         <TextView
+            android:id="@+id/high_price"
             style="@style/high_price"
             android:text="@string/high_price_dummy"
             />
         <TextView
+            android:id="@+id/low_price"
             style="@style/low_price"
             android:layout_marginTop="-12dp"
             android:text="@string/low_price_dummy"
             />
         <TextView
+            android:id="@+id/volume"
             style="@style/volume"
             android:text="@string/volume_dummy"
             />
         <com.netversa.btcprice.CandlestickChartView
+            android:id="@+id/chart"
             style="@style/candlestick_single"
             />
     </LinearLayout>
