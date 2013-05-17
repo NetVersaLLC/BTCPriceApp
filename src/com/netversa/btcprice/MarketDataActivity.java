@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.TextView;
 
 import com.xeiam.xchange.currency.Currencies;
@@ -24,6 +25,7 @@ public class MarketDataActivity extends Activity
     protected BroadcastReceiver responseReceiver;
 
     // views
+    protected TextView errorView;
     protected TextView priceView;
     protected TextView currencyView;
     protected TextView highPriceView;
@@ -38,6 +40,7 @@ public class MarketDataActivity extends Activity
         setContentView(R.layout.market_data_activity);
 
         // grab views
+        errorView = (TextView) findViewById(R.id.error);
         priceView = (TextView) findViewById(R.id.price);
         currencyView = (TextView) findViewById(R.id.currency);
         highPriceView = (TextView) findViewById(R.id.high_price);
@@ -70,6 +73,8 @@ public class MarketDataActivity extends Activity
      */
     protected void startRefresh()
     {
+        showError(null);
+
         registerReceiver(responseReceiver, responseFilter);
 
         FetchService.requestMarket(this, MarketData.MT_GOX, Currencies.USD,
@@ -83,8 +88,23 @@ public class MarketDataActivity extends Activity
         unregisterReceiver(responseReceiver);
         if(marketData == null)
         {
-            // TODO error display or so
+            showError(getString(R.string.fetch_error_generic));
         }
+    }
+
+    /** Reveal the error view and show a message in it, or hide it.
+     *  @param error String to display or null to clear and hide error view
+     */
+    protected void showError(String error)
+    {
+        if(error == null)
+        {
+            errorView.setVisibility(View.GONE);
+            errorView.setText("");
+            return;
+        }
+        errorView.setText(error);
+        errorView.setVisibility(View.VISIBLE);
     }
 
     @Override

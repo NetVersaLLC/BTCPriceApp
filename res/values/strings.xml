@@ -5,6 +5,8 @@
 <resources>
     <string name="app_name">BTC Price</string>
 
+    <string name="fetch_error_generic">Update failed</string>
+
     <string name="price_dummy">--.--</string>
     <string name="currency_pair_dummy">--/--</string>
     <string name="high_price_dummy">▲ --.--</string>

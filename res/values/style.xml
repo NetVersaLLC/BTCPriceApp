@@ -7,6 +7,15 @@
 
     <style name="theme" parent="@android:style/Theme.Light.NoTitleBar">
     </style>
+    <style name="error_view">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:padding">4dp</item>
+        <item name="android:visibility">gone</item>
+        <item name="android:textSize">24sp</item>
+        <item name="android:background">@color/decrease</item>
+        <item name="android:gravity">center</item>
+    </style>
     <style name="root_scrollview">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">match_parent</item>
