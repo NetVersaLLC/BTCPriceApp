@@ -19,32 +19,35 @@ public class MarketDataActivity extends Activity
     // by when should we be hearing back from FetchService?
     protected long expectResultsBy;
 
+    protected IntentFilter responseFilter;
+    protected BroadcastReceiver responseReceiver;
+
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.market_data_activity);
 
+        responseFilter = new IntentFilter(FetchService.ACTION_RESPONSE);
+        responseFilter.addDataScheme(FetchService.DATA_SCHEME);
+        responseReceiver = new FetchReceiver();
+
         if(savedInstanceState != null)
         {
-            marketData = (MarketData) savedInstanceState.getParcelable("marketData");
+            marketData = (MarketData)
+                savedInstanceState.getParcelable("marketData");
             expectResultsBy = savedInstanceState.getLong("expectResultsBy");
         }
 
-        // do we neither have market data nor expect incoming data?
-        if(marketData == null && expectResultsBy == 0)
+        // if there's no market data to speak of fetch it.  If a fetch is in
+        // progress the request will be ignored
+        if(marketData == null)
         {
-            // then let's fetch some
-            // TODO
+            registerReceiver(responseReceiver, responseFilter);
+
+            FetchService.requestMarket(this, MarketData.MT_GOX, Currencies.USD,
+                    Currencies.BTC);
         }
-
-        IntentFilter filter = new IntentFilter(FetchService.ACTION_RESPONSE);
-        filter.addDataScheme(FetchService.DATA_SCHEME);
-        registerReceiver(new FetchReceiver(), filter);
-
-        startService(new Intent(FetchService.ACTION_REQUEST,
-                    FetchService.marketTarget(MarketData.MT_GOX, Currencies.USD,
-                        Currencies.BTC)));
     }
 
     @Override
@@ -65,6 +68,7 @@ public class MarketDataActivity extends Activity
             {
                 return;
             }
+            unregisterReceiver(responseReceiver);
         }
     }
 }
