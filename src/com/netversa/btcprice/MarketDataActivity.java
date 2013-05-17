@@ -43,10 +43,28 @@ public class MarketDataActivity extends Activity
         // progress the request will be ignored
         if(marketData == null)
         {
-            registerReceiver(responseReceiver, responseFilter);
+            startRefresh();
+        }
+    }
 
-            FetchService.requestMarket(this, MarketData.MT_GOX, Currencies.USD,
-                    Currencies.BTC);
+    /** Tell the FetchService to get market data and hook into its response.
+     */
+    protected void startRefresh()
+    {
+        registerReceiver(responseReceiver, responseFilter);
+
+        FetchService.requestMarket(this, MarketData.MT_GOX, Currencies.USD,
+                Currencies.BTC);
+    }
+
+    /** Take data from MarketData object and update views.
+     */
+    protected void completeRefresh()
+    {
+        unregisterReceiver(responseReceiver);
+        if(marketData == null)
+        {
+            // TODO error display or so
         }
     }
 
@@ -68,7 +86,8 @@ public class MarketDataActivity extends Activity
             {
                 return;
             }
-            unregisterReceiver(responseReceiver);
+            // TODO double-check data URI
+            completeRefresh();
         }
     }
 }
