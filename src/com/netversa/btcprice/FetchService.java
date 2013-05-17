@@ -6,6 +6,8 @@ package com.netversa.btcprice;
 import java.util.HashSet;
 
 import android.app.Service;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.IBinder;
@@ -107,11 +109,23 @@ public class FetchService extends Service
     }
 
     // TODO overload with default exchange from SharedPrefs
+    /** Helper function to produce a data URI to request market data for an
+     * exchange and currency pair.
+     */
     public static Uri marketTarget(String exchange, String baseCurrency, String
             counterCurrency)
     {
         return Uri.parse(String.format(MARKET_DATA_URI_FORMAT, exchange,
                     baseCurrency, counterCurrency));
+    }
+
+    /** Helper function to send a fetch request to this service.
+     */
+    public static ComponentName requestMarket(Context context, String exchange,
+            String baseCurrency, String counterCurrency)
+    {
+        return context.startService(new Intent(ACTION_REQUEST,
+                    marketTarget(exchange, baseCurrency, counterCurrency)));
     }
 
     /** Runnable wrapper that does actual fetching in a thread.
