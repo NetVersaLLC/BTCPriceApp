@@ -39,6 +39,8 @@ public class FetchService extends Service
         "com.netversa.btcprice.ACTION_FETCH_RESPONSE";
     public static final String EXTRA_MARKET_DATA =
         "com.netversa.btcprice.EXTRA_MARKET_DATA";
+    public static final String EXTRA_ERROR_STRING =
+        "com.netversa.btcprice.EXTRA_ERROR_STRING";
 
     public static final String DATA_SCHEME = "data";
     public static final String MARKET_DATA_ACTION = "market";
@@ -93,25 +95,50 @@ public class FetchService extends Service
         {
             finalizeFetch(target);
         }
-        // TODO just choose and validate action here and move fetch out
-        // market data
         String fetchAction = arguments.get(0);
-        if(!MARKET_DATA_ACTION.equalsIgnoreCase(fetchAction) ||
-                arguments.size() != 3)
-        {
-            finalizeFetch(target);
-        }
-        String baseCurrency = arguments.get(1);
-        String counterCurrency = arguments.get(2);
 
         // start fetching!
+        Intent resultIntent = new Intent(ACTION_RESPONSE, target);
+        // market data
+        if(MARKET_DATA_ACTION.equalsIgnoreCase(fetchAction))
+        {
+            if(arguments.size() != 3)
+            {
+                finalizeFetch(target);
+            }
+            String baseCurrency = arguments.get(1);
+            String counterCurrency = arguments.get(2);
+
+            fetchMarketData(resultIntent, exchangeName, baseCurrency,
+                    counterCurrency);
+        }
+
+        sendBroadcast(resultIntent);
+
+        finalizeFetch(target);
+    }
+
+    protected Intent fetchMarketData(Intent output, String exchangeName,
+            String baseCurrency, String counterCurrency)
+    {
 
         // TODO select exchange based on URI
-        Exchange exchange = ExchangeFactory.INSTANCE.createExchange(
-                    MtGoxExchange.class.getName());
-        PollingMarketDataService exchangeData =
-            exchange.getPollingMarketDataService();
-        Ticker ticker = exchangeData.getTicker(baseCurrency, counterCurrency);
+        Ticker ticker;
+        try
+        {
+            Exchange exchange = ExchangeFactory.INSTANCE.createExchange(
+                        MtGoxExchange.class.getName());
+            PollingMarketDataService exchangeData =
+                exchange.getPollingMarketDataService();
+            ticker = exchangeData.getTicker(baseCurrency,
+                    counterCurrency);
+        }
+        // lazy catch-all with pass-through to user
+        catch(Throwable e)
+        {
+            output.putExtra(EXTRA_ERROR_STRING, e.getMessage());
+            return output;
+        }
 
         MarketData result = new MarketData(exchangeName, baseCurrency,
                 counterCurrency, ticker.getLast().getAmount(),
@@ -119,11 +146,9 @@ public class FetchService extends Service
                 ticker.getHigh().getAmount(), ticker.getLow().getAmount(),
                 ticker.getVolume(), ticker.getTimestamp());
 
-        Intent resultIntent = new Intent(ACTION_RESPONSE, target);
-        resultIntent.putExtra(EXTRA_MARKET_DATA, result);
-        sendBroadcast(resultIntent);
+        output.putExtra(EXTRA_MARKET_DATA, result);
 
-        finalizeFetch(target);
+        return output;
     }
 
     /** Mark a fetched target inactive and stop the service if necessary.

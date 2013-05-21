@@ -18,6 +18,7 @@ import com.xeiam.xchange.currency.Currencies;
 public class MarketDataActivity extends Activity
 {
     protected MarketData marketData;
+    protected String errorString;
     // by when should we be hearing back from FetchService?
     protected long expectResultsBy;
 
@@ -88,7 +89,8 @@ public class MarketDataActivity extends Activity
         unregisterReceiver(responseReceiver);
         if(marketData == null)
         {
-            showError(getString(R.string.fetch_error_generic));
+            showError(errorString);
+            return;
         }
         priceView.setText(String.format(getString(R.string.price_format),
                     marketData.lastPrice));
@@ -139,8 +141,14 @@ public class MarketDataActivity extends Activity
                 return;
             }
             // TODO double-check data URI
+            errorString =
+                intent.getStringExtra(FetchService.EXTRA_ERROR_STRING);
             marketData = (MarketData)
                 intent.getParcelableExtra(FetchService.EXTRA_MARKET_DATA);
+            if(marketData == null && errorString == null)
+            {
+                errorString = getString(R.string.fetch_error_generic);
+            }
             completeRefresh();
         }
     }
