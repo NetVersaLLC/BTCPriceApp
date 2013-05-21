@@ -77,8 +77,8 @@ public class MarketDataActivity extends Activity
 
         registerReceiver(responseReceiver, responseFilter);
 
-        FetchService.requestMarket(this, MarketData.MT_GOX, Currencies.USD,
-                Currencies.BTC);
+        FetchService.requestMarket(this, MarketData.MT_GOX, Currencies.BTC,
+                Currencies.USD);
     }
 
     /** Take data from MarketData object and update views.

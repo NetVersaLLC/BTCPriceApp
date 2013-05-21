@@ -4,6 +4,7 @@
 package com.netversa.btcprice;
 
 import java.util.HashSet;
+import java.util.List;
 
 import android.app.Service;
 import android.content.ComponentName;
@@ -11,6 +12,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.IBinder;
+
+import com.xeiam.xchange.Exchange;
+import com.xeiam.xchange.ExchangeFactory;
+import com.xeiam.xchange.dto.marketdata.Ticker;
+import com.xeiam.xchange.mtgox.v1.MtGoxExchange;
+import com.xeiam.xchange.service.marketdata.polling.PollingMarketDataService;
 
 /** Class for fetching Market data decoupled from Activity lifestyles.
  *
@@ -34,8 +41,9 @@ public class FetchService extends Service
         "com.netversa.btcprice.EXTRA_MARKET_DATA";
 
     public static final String DATA_SCHEME = "data";
+    public static final String MARKET_DATA_ACTION = "market";
     public static final String MARKET_DATA_URI_FORMAT = DATA_SCHEME +
-        "://%s/market/%s/%s";
+        "://%s/" + MARKET_DATA_ACTION + "/%s/%s";
 
     protected ActiveTargetSet activeTargets;
 
@@ -77,10 +85,39 @@ public class FetchService extends Service
             return;
         }
 
-        //
-        // TODO Actual fetching action!
-        //
-        MarketData result = new MarketData();
+        String exchangeName = target.getAuthority();
+        List<String> arguments = target.getPathSegments();
+        // data://exchange/action/args
+        if(exchangeName == null || exchangeName.length() == 0 ||
+                arguments.size() == 0)
+        {
+            finalizeFetch(target);
+        }
+        // TODO just choose and validate action here and move fetch out
+        // market data
+        String fetchAction = arguments.get(0);
+        if(!MARKET_DATA_ACTION.equalsIgnoreCase(fetchAction) ||
+                arguments.size() != 3)
+        {
+            finalizeFetch(target);
+        }
+        String baseCurrency = arguments.get(1);
+        String counterCurrency = arguments.get(2);
+
+        // start fetching!
+
+        // TODO select exchange based on URI
+        Exchange exchange = ExchangeFactory.INSTANCE.createExchange(
+                    MtGoxExchange.class.getName());
+        PollingMarketDataService exchangeData =
+            exchange.getPollingMarketDataService();
+        Ticker ticker = exchangeData.getTicker(baseCurrency, counterCurrency);
+
+        MarketData result = new MarketData(exchangeName, baseCurrency,
+                counterCurrency, ticker.getLast().getAmount(),
+                ticker.getBid().getAmount(), ticker.getAsk().getAmount(),
+                ticker.getHigh().getAmount(), ticker.getLow().getAmount(),
+                ticker.getVolume(), ticker.getTimestamp());
 
         Intent resultIntent = new Intent(ACTION_RESPONSE, target);
         resultIntent.putExtra(EXTRA_MARKET_DATA, result);

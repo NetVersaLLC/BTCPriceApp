@@ -3,6 +3,7 @@
  */
 package com.netversa.btcprice;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 import android.os.Parcel;
@@ -14,27 +15,36 @@ public class MarketData implements Parcelable
 {
     public static final String MT_GOX = "mtgox";
 
-    public String exchangeName;
+    public final String exchangeName;
 
-    public String baseCurrency;
-    public String counterCurrency;
+    public final String baseCurrency;
+    public final String counterCurrency;
 
-    public double lastPrice;
-    public double bidPrice;
-    public double askPrice;
-    public double highPrice;
-    public double lowPrice;
+    public final BigDecimal lastPrice;
+    public final BigDecimal bidPrice;
+    public final BigDecimal askPrice;
+    public final BigDecimal highPrice;
+    public final BigDecimal lowPrice;
 
-    public double volume;
+    public final BigDecimal volume;
 
-    public Date timestamp;
+    public final Date timestamp;
 
-    public MarketData()
+    public MarketData(String exchangeName_, String baseCurrency_,
+            String counterCurrency_, BigDecimal lastPrice_,
+            BigDecimal bidPrice_, BigDecimal askPrice_, BigDecimal highPrice_,
+            BigDecimal lowPrice_, BigDecimal volume_, Date timestamp_)
     {
-        exchangeName = "";
-        baseCurrency = "";
-        counterCurrency = "";
-        timestamp = new Date();
+        exchangeName = exchangeName_;
+        baseCurrency = baseCurrency_;
+        counterCurrency = counterCurrency_;
+        lastPrice = lastPrice_;
+        bidPrice = bidPrice_;
+        askPrice = askPrice_;
+        highPrice = highPrice_;
+        lowPrice = lowPrice_;
+        volume = volume_;
+        timestamp = timestamp_;
     }
 
     @Override
@@ -51,22 +61,15 @@ public class MarketData implements Parcelable
         out.writeString(baseCurrency);
         out.writeString(counterCurrency);
 
-        out.writeDouble(lastPrice);
-        out.writeDouble(bidPrice);
-        out.writeDouble(askPrice);
-        out.writeDouble(highPrice);
-        out.writeDouble(lowPrice);
+        out.writeString(lastPrice != null ? lastPrice.toString() : null);
+        out.writeString(bidPrice != null ? bidPrice.toString() : null);
+        out.writeString(askPrice != null ? askPrice.toString() : null);
+        out.writeString(highPrice != null ? highPrice.toString() : null);
+        out.writeString(lowPrice != null ? lowPrice.toString() : null);
 
-        out.writeDouble(volume);
+        out.writeString(volume != null ? volume.toString() : null);
 
-        if(timestamp != null)
-        {
-            out.writeLong(timestamp.getTime());
-        }
-        else
-        {
-            out.writeLong(0);
-        }
+        out.writeLong(timestamp != null ? timestamp.getTime() : 0);
     }
 
     public static final Parcelable.Creator<MarketData> CREATOR
@@ -86,13 +89,21 @@ public class MarketData implements Parcelable
          baseCurrency = in.readString();
          counterCurrency = in.readString();
 
-         lastPrice = in.readDouble();
-         bidPrice = in.readDouble();
-         askPrice = in.readDouble();
-         highPrice = in.readDouble();
-         lowPrice = in.readDouble();
+         String temp;
 
-         volume = in.readDouble();
+         temp = in.readString();
+         lastPrice = temp != null ? new BigDecimal(temp) : null;
+         temp = in.readString();
+         bidPrice = temp != null ? new BigDecimal(temp) : null;
+         temp = in.readString();
+         askPrice = temp != null ? new BigDecimal(temp) : null;
+         temp = in.readString();
+         highPrice = temp != null ? new BigDecimal(temp) : null;
+         temp = in.readString();
+         lowPrice = temp != null ? new BigDecimal(temp) : null;
+
+         temp = in.readString();
+         volume = temp != null ? new BigDecimal(temp) : null;
 
          timestamp = new Date(in.readLong());
      }
