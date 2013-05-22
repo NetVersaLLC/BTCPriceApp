@@ -87,30 +87,51 @@ public class FetchService extends Service
             return;
         }
 
+        Intent resultIntent = new Intent(ACTION_RESPONSE, target);
+
         String exchangeName = target.getAuthority();
         List<String> arguments = target.getPathSegments();
         // data://exchange/action/args
         if(exchangeName == null || exchangeName.length() == 0 ||
                 arguments.size() == 0)
         {
+            String format = getString(R.string.fetch_error_bad_target_format);
+            resultIntent.putExtra(EXTRA_ERROR_STRING, String.format(format,
+                        target.toString()));
+            sendBroadcast(resultIntent);
             finalizeFetch(target);
+            return;
         }
         String fetchAction = arguments.get(0);
 
         // start fetching!
-        Intent resultIntent = new Intent(ACTION_RESPONSE, target);
+
         // market data
         if(MARKET_DATA_ACTION.equalsIgnoreCase(fetchAction))
         {
             if(arguments.size() != 3)
             {
+                String format =
+                    getString(R.string.fetch_error_wrong_arity_format);
+                resultIntent.putExtra(EXTRA_ERROR_STRING, String.format(format,
+                            fetchAction, 2));
+                sendBroadcast(resultIntent);
                 finalizeFetch(target);
+                return;
             }
             String baseCurrency = arguments.get(1);
             String counterCurrency = arguments.get(2);
 
             fetchMarketData(resultIntent, exchangeName, baseCurrency,
                     counterCurrency);
+        }
+        // unknown action
+        else
+        {
+            String format =
+                getString(R.string.fetch_error_unknown_action_format);
+            resultIntent.putExtra(EXTRA_ERROR_STRING, String.format(format,
+                        fetchAction));
         }
 
         sendBroadcast(resultIntent);
