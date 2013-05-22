@@ -7,7 +7,6 @@ import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
@@ -25,7 +24,6 @@ public class MarketDataActivity extends Activity
     // by when should we be hearing back from FetchService?
     protected long expectResultsBy;
 
-    protected IntentFilter responseFilter;
     protected BroadcastReceiver responseReceiver;
 
     // views
@@ -54,8 +52,6 @@ public class MarketDataActivity extends Activity
 
         // setup data
 
-        responseFilter = new IntentFilter(FetchService.ACTION_RESPONSE);
-        responseFilter.addDataScheme(FetchService.DATA_SCHEME);
         responseReceiver = new FetchReceiver();
 
         if(savedInstanceState != null)
@@ -79,15 +75,14 @@ public class MarketDataActivity extends Activity
     {
         showError(null);
 
-        registerReceiver(responseReceiver, responseFilter);
         priceView.setText(R.string.price_dummy);
         currencyView.setText(R.string.currency_pair_dummy);
         highPriceView.setText(R.string.high_price_dummy);
         lowPriceView.setText(R.string.low_price_dummy);
         volumeView.setText(R.string.volume_dummy);
 
-        FetchService.requestMarket(this, MarketData.MT_GOX, Currencies.BTC,
-                Currencies.USD);
+        FetchService.requestMarket(this, responseReceiver, MarketData.MT_GOX,
+                Currencies.BTC, Currencies.USD);
     }
 
     /** Take data from MarketData object and update views.

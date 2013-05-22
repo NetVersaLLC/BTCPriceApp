@@ -7,11 +7,14 @@ import java.util.HashSet;
 import java.util.List;
 
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.IBinder;
+import android.os.PatternMatcher;
 
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.ExchangeFactory;
@@ -203,12 +206,26 @@ public class FetchService extends Service
     }
 
     /** Helper function to send a fetch request to this service.
+     *  @param receiver BroadcastReceiver that will receive result, or null
      */
-    public static ComponentName requestMarket(Context context, String exchange,
-            String baseCurrency, String counterCurrency)
+    public static ComponentName requestMarket(Context context,
+            BroadcastReceiver receiver, String exchange, String baseCurrency,
+            String counterCurrency)
     {
-        return context.startService(new Intent(ACTION_REQUEST,
-                    marketTarget(exchange, baseCurrency, counterCurrency)));
+        Uri target = marketTarget(exchange, baseCurrency, counterCurrency);
+
+        if(receiver != null)
+        {
+            IntentFilter filter = new IntentFilter(ACTION_RESPONSE);
+            filter.addDataScheme(target.getScheme());
+            filter.addDataAuthority(target.getAuthority(), null);
+            filter.addDataPath(target.getPath(),
+                    PatternMatcher.PATTERN_LITERAL);
+
+            context.registerReceiver(receiver, filter);
+        }
+
+        return context.startService(new Intent(ACTION_REQUEST, target));
     }
 
     /** Runnable wrapper that does actual fetching in a thread.
