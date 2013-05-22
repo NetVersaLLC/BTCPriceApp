@@ -10,6 +10,9 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
@@ -77,6 +80,11 @@ public class MarketDataActivity extends Activity
         showError(null);
 
         registerReceiver(responseReceiver, responseFilter);
+        priceView.setText(R.string.price_dummy);
+        currencyView.setText(R.string.currency_pair_dummy);
+        highPriceView.setText(R.string.high_price_dummy);
+        lowPriceView.setText(R.string.low_price_dummy);
+        volumeView.setText(R.string.volume_dummy);
 
         FetchService.requestMarket(this, MarketData.MT_GOX, Currencies.BTC,
                 Currencies.USD);
@@ -129,6 +137,26 @@ public class MarketDataActivity extends Activity
 
         savedInstanceState.putParcelable("marketData", marketData);
         savedInstanceState.putLong("expectResultsBy", expectResultsBy);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        switch (item.getItemId()) {
+            case R.id.refresh:
+                startRefresh();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.market_data_activity, menu);
+        return true;
     }
 
     protected class FetchReceiver extends BroadcastReceiver
