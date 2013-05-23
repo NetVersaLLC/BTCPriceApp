@@ -17,9 +17,12 @@ import android.widget.TextView;
 
 import com.xeiam.xchange.currency.Currencies;
 
+/** Simple activity to display and update prices on demand.
+ */
 public class MarketDataActivity extends Activity
 {
     protected MarketData marketData;
+    protected MarketData cachedMarketData;
     protected String errorString;
     // by when should we be hearing back from FetchService?
     protected long expectResultsBy;
@@ -90,24 +93,32 @@ public class MarketDataActivity extends Activity
     protected void completeRefresh()
     {
         unregisterReceiver(responseReceiver);
-        if(marketData == null)
+
+        if(errorString != null)
         {
             showError(errorString);
-            return;
         }
-        priceView.setText(String.format(getString(R.string.price_format),
-                    marketData.lastPrice));
-        currencyView.setText(
-                String.format(getString(R.string.currency_pair_format),
-                    marketData.baseCurrency, marketData.counterCurrency));
-        highPriceView.setText(
-                String.format(getString(R.string.high_price_format),
-                    marketData.highPrice));
-        lowPriceView.setText(
-                String.format(getString(R.string.low_price_format),
-                    marketData.lowPrice));
-        volumeView.setText(String.format(getString(R.string.volume_format),
-                    marketData.volume));
+
+        // if the fetch was successful, the cached data will be the freshest,
+        // if not, then reverting to the stale cached data if available is
+        // better than remaining blank
+        if(cachedMarketData != null)
+        {
+            priceView.setText(String.format(getString(R.string.price_format),
+                        cachedMarketData.lastPrice));
+            currencyView.setText(
+                    String.format(getString(R.string.currency_pair_format),
+                        cachedMarketData.baseCurrency,
+                        cachedMarketData.counterCurrency));
+            highPriceView.setText(
+                    String.format(getString(R.string.high_price_format),
+                        cachedMarketData.highPrice));
+            lowPriceView.setText(
+                    String.format(getString(R.string.low_price_format),
+                        cachedMarketData.lowPrice));
+            volumeView.setText(String.format(getString(R.string.volume_format),
+                        cachedMarketData.volume));
+        }
     }
 
     /** Reveal the error view and show a message in it, or hide it.
@@ -168,6 +179,10 @@ public class MarketDataActivity extends Activity
                 intent.getStringExtra(FetchService.EXTRA_ERROR_STRING);
             marketData = (MarketData)
                 intent.getParcelableExtra(FetchService.EXTRA_MARKET_DATA);
+            if(marketData != null)
+            {
+                cachedMarketData = marketData;
+            }
             if(marketData == null && errorString == null)
             {
                 errorString = getString(R.string.fetch_error_generic);
