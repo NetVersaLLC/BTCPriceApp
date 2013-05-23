@@ -7,21 +7,26 @@ import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
 import com.xeiam.xchange.currency.Currencies;
 
+/** Simple activity to display and update prices on demand.
+ */
 public class MarketDataActivity extends Activity
 {
     protected MarketData marketData;
+    protected MarketData cachedMarketData;
+    protected String errorString;
     // by when should we be hearing back from FetchService?
     protected long expectResultsBy;
 
-    protected IntentFilter responseFilter;
     protected BroadcastReceiver responseReceiver;
 
     // views
@@ -50,22 +55,27 @@ public class MarketDataActivity extends Activity
 
         // setup data
 
-        responseFilter = new IntentFilter(FetchService.ACTION_RESPONSE);
-        responseFilter.addDataScheme(FetchService.DATA_SCHEME);
         responseReceiver = new FetchReceiver();
 
         if(savedInstanceState != null)
         {
             marketData = (MarketData)
                 savedInstanceState.getParcelable("marketData");
+            cachedMarketData = (MarketData)
+                savedInstanceState.getParcelable("cachedMarketData");
+            errorString = savedInstanceState.getString("errorString");
             expectResultsBy = savedInstanceState.getLong("expectResultsBy");
         }
 
         // if there's no market data to speak of, fetch it.  If a fetch is in
         // progress the request will be ignored
-        if(marketData == null)
+        if(cachedMarketData == null)
         {
             startRefresh();
+        }
+        else
+        {
+            completeRefresh();
         }
     }
 
@@ -75,34 +85,55 @@ public class MarketDataActivity extends Activity
     {
         showError(null);
 
-        registerReceiver(responseReceiver, responseFilter);
+        priceView.setText(R.string.price_dummy);
+        currencyView.setText(R.string.currency_pair_dummy);
+        highPriceView.setText(R.string.high_price_dummy);
+        lowPriceView.setText(R.string.low_price_dummy);
+        volumeView.setText(R.string.volume_dummy);
 
-        FetchService.requestMarket(this, MarketData.MT_GOX, Currencies.USD,
-                Currencies.BTC);
+        FetchService.requestMarket(this, responseReceiver, MarketData.MT_GOX,
+                Currencies.BTC, Currencies.USD);
     }
 
     /** Take data from MarketData object and update views.
      */
     protected void completeRefresh()
     {
-        unregisterReceiver(responseReceiver);
-        if(marketData == null)
+        try
         {
-            showError(getString(R.string.fetch_error_generic));
+            unregisterReceiver(responseReceiver);
         }
-        priceView.setText(String.format(getString(R.string.price_format),
-                    marketData.lastPrice));
-        currencyView.setText(
-                String.format(getString(R.string.currency_pair_format),
-                    marketData.baseCurrency, marketData.counterCurrency));
-        highPriceView.setText(
-                String.format(getString(R.string.high_price_format),
-                    marketData.highPrice));
-        lowPriceView.setText(
-                String.format(getString(R.string.low_price_format),
-                    marketData.lowPrice));
-        volumeView.setText(String.format(getString(R.string.volume_format),
-                    marketData.volume));
+        catch(IllegalArgumentException e)
+        {
+            // evidently Android doesn't have a way to unregister if necessary,
+            // nor a way to check if a receiver is registered.
+        }
+
+        if(errorString != null)
+        {
+            showError(errorString);
+        }
+
+        // if the fetch was successful, the cached data will be the freshest,
+        // if not, then reverting to the stale cached data if available is
+        // better than remaining blank
+        if(cachedMarketData != null)
+        {
+            priceView.setText(String.format(getString(R.string.price_format),
+                        cachedMarketData.lastPrice));
+            currencyView.setText(
+                    String.format(getString(R.string.currency_pair_format),
+                        cachedMarketData.baseCurrency,
+                        cachedMarketData.counterCurrency));
+            highPriceView.setText(
+                    String.format(getString(R.string.high_price_format),
+                        cachedMarketData.highPrice));
+            lowPriceView.setText(
+                    String.format(getString(R.string.low_price_format),
+                        cachedMarketData.lowPrice));
+            volumeView.setText(String.format(getString(R.string.volume_format),
+                        cachedMarketData.volume));
+        }
     }
 
     /** Reveal the error view and show a message in it, or hide it.
@@ -126,7 +157,29 @@ public class MarketDataActivity extends Activity
         super.onSaveInstanceState(savedInstanceState);
 
         savedInstanceState.putParcelable("marketData", marketData);
+        savedInstanceState.putParcelable("cachedMarketData", cachedMarketData);
+        savedInstanceState.putString("errorString", errorString);
         savedInstanceState.putLong("expectResultsBy", expectResultsBy);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        switch (item.getItemId()) {
+            case R.id.refresh:
+                startRefresh();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.market_data_activity, menu);
+        return true;
     }
 
     protected class FetchReceiver extends BroadcastReceiver
@@ -139,8 +192,18 @@ public class MarketDataActivity extends Activity
                 return;
             }
             // TODO double-check data URI
+            errorString =
+                intent.getStringExtra(FetchService.EXTRA_ERROR_STRING);
             marketData = (MarketData)
                 intent.getParcelableExtra(FetchService.EXTRA_MARKET_DATA);
+            if(marketData != null)
+            {
+                cachedMarketData = marketData;
+            }
+            if(marketData == null && errorString == null)
+            {
+                errorString = getString(R.string.fetch_error_generic);
+            }
             completeRefresh();
         }
     }

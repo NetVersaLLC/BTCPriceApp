@@ -4,13 +4,23 @@
 package com.netversa.btcprice;
 
 import java.util.HashSet;
+import java.util.List;
 
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.IBinder;
+import android.os.PatternMatcher;
+
+import com.xeiam.xchange.Exchange;
+import com.xeiam.xchange.ExchangeFactory;
+import com.xeiam.xchange.dto.marketdata.Ticker;
+import com.xeiam.xchange.mtgox.v1.MtGoxExchange;
+import com.xeiam.xchange.service.marketdata.polling.PollingMarketDataService;
 
 /** Class for fetching Market data decoupled from Activity lifestyles.
  *
@@ -32,10 +42,13 @@ public class FetchService extends Service
         "com.netversa.btcprice.ACTION_FETCH_RESPONSE";
     public static final String EXTRA_MARKET_DATA =
         "com.netversa.btcprice.EXTRA_MARKET_DATA";
+    public static final String EXTRA_ERROR_STRING =
+        "com.netversa.btcprice.EXTRA_ERROR_STRING";
 
     public static final String DATA_SCHEME = "data";
+    public static final String MARKET_DATA_ACTION = "market";
     public static final String MARKET_DATA_URI_FORMAT = DATA_SCHEME +
-        "://%s/market/%s/%s";
+        "://%s/" + MARKET_DATA_ACTION + "/%s/%s";
 
     protected ActiveTargetSet activeTargets;
 
@@ -77,16 +90,89 @@ public class FetchService extends Service
             return;
         }
 
-        //
-        // TODO Actual fetching action!
-        //
-        MarketData result = new MarketData();
-
         Intent resultIntent = new Intent(ACTION_RESPONSE, target);
-        resultIntent.putExtra(EXTRA_MARKET_DATA, result);
+
+        String exchangeName = target.getAuthority();
+        List<String> arguments = target.getPathSegments();
+        // data://exchange/action/args
+        if(exchangeName == null || exchangeName.length() == 0 ||
+                arguments.size() == 0)
+        {
+            String format = getString(R.string.fetch_error_bad_target_format);
+            resultIntent.putExtra(EXTRA_ERROR_STRING, String.format(format,
+                        target.toString()));
+            sendBroadcast(resultIntent);
+            finalizeFetch(target);
+            return;
+        }
+        String fetchAction = arguments.get(0);
+
+        // start fetching!
+
+        // market data
+        if(MARKET_DATA_ACTION.equalsIgnoreCase(fetchAction))
+        {
+            if(arguments.size() != 3)
+            {
+                String format =
+                    getString(R.string.fetch_error_wrong_arity_format);
+                resultIntent.putExtra(EXTRA_ERROR_STRING, String.format(format,
+                            fetchAction, 2));
+                sendBroadcast(resultIntent);
+                finalizeFetch(target);
+                return;
+            }
+            String baseCurrency = arguments.get(1);
+            String counterCurrency = arguments.get(2);
+
+            fetchMarketData(resultIntent, exchangeName, baseCurrency,
+                    counterCurrency);
+        }
+        // unknown action
+        else
+        {
+            String format =
+                getString(R.string.fetch_error_unknown_action_format);
+            resultIntent.putExtra(EXTRA_ERROR_STRING, String.format(format,
+                        fetchAction));
+        }
+
         sendBroadcast(resultIntent);
 
         finalizeFetch(target);
+    }
+
+    protected Intent fetchMarketData(Intent output, String exchangeName,
+            String baseCurrency, String counterCurrency)
+    {
+
+        // TODO select exchange based on URI
+        Ticker ticker;
+        try
+        {
+            Exchange exchange = ExchangeFactory.INSTANCE.createExchange(
+                        MtGoxExchange.class.getName());
+            PollingMarketDataService exchangeData =
+                exchange.getPollingMarketDataService();
+            ticker = exchangeData.getTicker(baseCurrency,
+                    counterCurrency);
+        }
+        // lazy catch-all with pass-through to user
+        catch(Throwable e)
+        {
+            output.putExtra(EXTRA_ERROR_STRING, e.getMessage());
+            return output;
+        }
+
+        MarketData result = new MarketData(exchangeName, baseCurrency,
+                counterCurrency, ticker.getLast().getAmount(),
+                ticker.getBid().getAmount(), ticker.getAsk().getAmount(),
+                ticker.getHigh().getAmount(), ticker.getLow().getAmount(),
+                ticker.getVolume(), ticker.getTimestamp());
+
+        output.putExtra(EXTRA_MARKET_DATA, result);
+
+        return output;
     }
 
     /** Mark a fetched target inactive and stop the service if necessary.
@@ -120,12 +206,26 @@ public class FetchService extends Service
     }
 
     /** Helper function to send a fetch request to this service.
+     *  @param receiver BroadcastReceiver that will receive result, or null
      */
-    public static ComponentName requestMarket(Context context, String exchange,
-            String baseCurrency, String counterCurrency)
+    public static ComponentName requestMarket(Context context,
+            BroadcastReceiver receiver, String exchange, String baseCurrency,
+            String counterCurrency)
     {
-        return context.startService(new Intent(ACTION_REQUEST,
-                    marketTarget(exchange, baseCurrency, counterCurrency)));
+        Uri target = marketTarget(exchange, baseCurrency, counterCurrency);
+
+        if(receiver != null)
+        {
+            IntentFilter filter = new IntentFilter(ACTION_RESPONSE);
+            filter.addDataScheme(target.getScheme());
+            filter.addDataAuthority(target.getAuthority(), null);
+            filter.addDataPath(target.getPath(),
+                    PatternMatcher.PATTERN_LITERAL);
+
+            context.registerReceiver(receiver, filter);
+        }
+
+        return context.startService(new Intent(ACTION_REQUEST, target));
     }
 
     /** Runnable wrapper that does actual fetching in a thread.
