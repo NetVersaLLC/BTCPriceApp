@@ -61,14 +61,21 @@ public class MarketDataActivity extends Activity
         {
             marketData = (MarketData)
                 savedInstanceState.getParcelable("marketData");
+            cachedMarketData = (MarketData)
+                savedInstanceState.getParcelable("cachedMarketData");
+            errorString = savedInstanceState.getString("errorString");
             expectResultsBy = savedInstanceState.getLong("expectResultsBy");
         }
 
         // if there's no market data to speak of, fetch it.  If a fetch is in
         // progress the request will be ignored
-        if(marketData == null)
+        if(cachedMarketData == null)
         {
             startRefresh();
+        }
+        else
+        {
+            completeRefresh();
         }
     }
 
@@ -92,7 +99,15 @@ public class MarketDataActivity extends Activity
      */
     protected void completeRefresh()
     {
-        unregisterReceiver(responseReceiver);
+        try
+        {
+            unregisterReceiver(responseReceiver);
+        }
+        catch(IllegalArgumentException e)
+        {
+            // evidently Android doesn't have a way to unregister if necessary,
+            // nor a way to check if a receiver is registered.
+        }
 
         if(errorString != null)
         {
@@ -142,6 +157,8 @@ public class MarketDataActivity extends Activity
         super.onSaveInstanceState(savedInstanceState);
 
         savedInstanceState.putParcelable("marketData", marketData);
+        savedInstanceState.putParcelable("cachedMarketData", cachedMarketData);
+        savedInstanceState.putString("errorString", errorString);
         savedInstanceState.putLong("expectResultsBy", expectResultsBy);
     }
 
