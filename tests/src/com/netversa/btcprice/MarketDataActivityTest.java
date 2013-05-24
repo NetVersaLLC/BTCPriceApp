@@ -1,23 +1,23 @@
+/*
+ * Copyright 2013 NetVersa LLC
+ */
 package com.netversa.btcprice;
 
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
+import android.net.Uri;
+import android.os.PatternMatcher;
 
 import java.math.BigDecimal;
 import java.util.Date;
 
-import android.test.ActivityInstrumentationTestCase2;
+import com.xeiam.xchange.currency.Currencies;
 
-/**
- * This is a simple framework for a test of an Application.  See
- * {@link android.test.ApplicationTestCase ApplicationTestCase} for more information on
- * how to write and extend Application tests.
- * <p/>
- * To run this test, you can type:
- * adb shell am instrument -w \
- * -e class com.netversa.btcprice.MarketDataActivityTest \
- * com.netversa.btcprice.tests/android.test.InstrumentationTestRunner
- */
-public class MarketDataActivityTest extends ActivityInstrumentationTestCase2<MarketDataActivity>
+import android.test.ActivityUnitTestCase;
+
+public class MarketDataActivityTest
+    extends ActivityUnitTestCase<MarketDataActivity>
 {
     protected MarketDataActivity activity;
     protected MarketData marketData;
@@ -27,14 +27,7 @@ public class MarketDataActivityTest extends ActivityInstrumentationTestCase2<Mar
 
     public MarketDataActivityTest()
     {
-        super("com.netversa.btcprice", MarketDataActivity.class);
-    }
-
-    @Override
-    protected void setUp() throws Exception
-    {
-        super.setUp();
-        activity = getActivity();
+        super(MarketDataActivity.class);
 
         errorString = "derp";
         marketData = new MarketData("mtgox", "BTC", "USD",
@@ -48,15 +41,18 @@ public class MarketDataActivityTest extends ActivityInstrumentationTestCase2<Mar
                 new BigDecimal("0.01"), new BigDecimal("100.00"),
                 new Date(1369196946000l));
         expectResultsBy = 1369197946000l;
+    }
+
+    public void testRotation() throws Throwable
+    {
+        startActivity(new Intent(), null, null);
+        activity = getActivity();
 
         activity.marketData = marketData;
         activity.cachedMarketData = cachedMarketData;
         activity.errorString = errorString;
         activity.expectResultsBy = expectResultsBy;
-    }
 
-    public void testRotation()
-    {
         activity.setRequestedOrientation(
                 ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
@@ -68,21 +64,23 @@ public class MarketDataActivityTest extends ActivityInstrumentationTestCase2<Mar
                 activity.errorString, errorString);
         assertEquals("expectResultsBy preservation",
                 activity.expectResultsBy, expectResultsBy);
+    }
 
-        activity.setRequestedOrientation(
-                ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+    public void testDataDisplay() throws Throwable
+    {
+        startActivity(new Intent(), null, null);
+        activity = getActivity();
 
-        // clean up just in case
         activity.marketData = marketData;
         activity.cachedMarketData = cachedMarketData;
         activity.errorString = errorString;
         activity.expectResultsBy = expectResultsBy;
-    }
 
-    public void testDataDisplay()
-    {
-        // FIXME gotta run this on the activity's own thread
-        activity.completeRefresh();
+        runTestOnUiThread(new Runnable() {
+            public void run() {
+                activity.completeRefresh();
+            }
+        });
 
         String expectedErrorText = errorString;
         String expectedPriceText =
@@ -116,6 +114,61 @@ public class MarketDataActivityTest extends ActivityInstrumentationTestCase2<Mar
                 activity.volumeView.getText(), expectedVolumeText);
     }
 
-    // TODO learn up on injecting intents and test broadcastreceiver
+    public void testDataReception() throws Throwable
+    {
+        startActivity(new Intent(), null, null);
+        activity = getActivity();
 
+        Uri target = FetchService.marketTarget(MarketData.MT_GOX,
+                Currencies.BTC, Currencies.USD);
+
+        IntentFilter filter = new IntentFilter(FetchService.ACTION_RESPONSE);
+        filter.addDataScheme(target.getScheme());
+        filter.addDataAuthority(target.getAuthority(), null);
+        filter.addDataPath(target.getPath(), PatternMatcher.PATTERN_LITERAL);
+
+        // test successful fetch
+
+        activity.registerReceiver(activity.responseReceiver, filter);
+
+        final Intent successIntent =
+            new Intent(FetchService.ACTION_RESPONSE, target);
+        successIntent.putExtra(FetchService.EXTRA_MARKET_DATA, marketData);
+
+        runTestOnUiThread(new Runnable() {
+            public void run() {
+                activity.startRefresh();
+                activity.responseReceiver.onReceive(activity, successIntent);
+            }
+        });
+
+        assertEquals("correct storing of good MarketData", activity.marketData,
+                marketData);
+        assertEquals("correct caching of good MarketData",
+                activity.cachedMarketData, marketData);
+        assertEquals("clear error message on successful fetch",
+                activity.errorString, null);
+
+        // test failed fetch
+
+        activity.registerReceiver(activity.responseReceiver, filter);
+
+        final Intent failureIntent =
+            new Intent(FetchService.ACTION_RESPONSE, target);
+        failureIntent.putExtra(FetchService.EXTRA_ERROR_STRING, errorString);
+
+        runTestOnUiThread(new Runnable() {
+            public void run() {
+                activity.startRefresh();
+                activity.responseReceiver.onReceive(activity, failureIntent);
+            }
+        });
+
+        assertEquals("correct blanking of bad MarketData", activity.marketData,
+                null);
+        assertEquals("correct caching of previous good MarketData",
+                activity.cachedMarketData, marketData);
+        assertEquals("error message on failed fetch",
+                activity.errorString, errorString);
+    }
 }
