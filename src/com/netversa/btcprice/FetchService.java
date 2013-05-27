@@ -5,6 +5,8 @@ package com.netversa.btcprice;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -51,11 +53,21 @@ public class FetchService extends Service
         "://%s/" + MARKET_DATA_ACTION + "/%s/%s";
 
     protected ActiveTargetSet activeTargets;
+    // exchanges are probably cached by the ExchangeFactory singleton, but
+    // having a cache inside FetchService makes for easy dependency injection
+    // for testing
+    protected Map<String, Exchange> exchangeCache;
+
+    // when testing, exceptions are almost always fatal instead of being
+    // propagated to a calling activity or service by Intent
+    protected boolean testing;
 
     @Override
     public void onCreate()
     {
+        testing = false;
         activeTargets = new ActiveTargetSet();
+        exchangeCache = new ConcurrentHashMap<String, Exchange>();
     }
 
     @Override
@@ -150,8 +162,7 @@ public class FetchService extends Service
         Ticker ticker;
         try
         {
-            Exchange exchange = ExchangeFactory.INSTANCE.createExchange(
-                        MtGoxExchange.class.getName());
+            Exchange exchange = getExchange(exchangeName);
             PollingMarketDataService exchangeData =
                 exchange.getPollingMarketDataService();
             ticker = exchangeData.getTicker(baseCurrency,
@@ -226,6 +237,27 @@ public class FetchService extends Service
         }
 
         return context.startService(new Intent(ACTION_REQUEST, target));
+    }
+
+    /** Get the XChange exchange object corresponding to a name.  Also provides
+     * an injection point for testing with mock exchange objects.
+     */
+    protected Exchange getExchange(String exchangeName)
+    {
+        Exchange output = exchangeCache.get(exchangeName);
+        if(output != null)
+        {
+            return output;
+        }
+
+        if(MarketData.MT_GOX.equalsIgnoreCase(exchangeName))
+        {
+            output = ExchangeFactory.INSTANCE.createExchange(
+                    MtGoxExchange.class.getName());
+            exchangeCache.put(exchangeName, output);
+        }
+        // TODO throw exception if unknown exchange
+        return output;
     }
 
     /** Runnable wrapper that does actual fetching in a thread.
