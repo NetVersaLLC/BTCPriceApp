@@ -27,3 +27,4 @@ build.xml
 *.swp
 *.swo
 *.vim
+tags
