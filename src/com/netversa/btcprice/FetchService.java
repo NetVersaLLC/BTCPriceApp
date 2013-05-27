@@ -111,8 +111,12 @@ public class FetchService extends Service
                 arguments.size() == 0)
         {
             String format = getString(R.string.fetch_error_bad_target_format);
-            resultIntent.putExtra(EXTRA_ERROR_STRING, String.format(format,
-                        target.toString()));
+            String errorString = String.format(format, target.toString());
+            if(testing)
+            {
+                throw new FetchException(errorString);
+            }
+            resultIntent.putExtra(EXTRA_ERROR_STRING, errorString);
             sendBroadcast(resultIntent);
             finalizeFetch(target);
             return;
@@ -128,8 +132,12 @@ public class FetchService extends Service
             {
                 String format =
                     getString(R.string.fetch_error_wrong_arity_format);
-                resultIntent.putExtra(EXTRA_ERROR_STRING, String.format(format,
-                            fetchAction, 2));
+                String errorString = String.format(format, fetchAction, 2);
+                if(testing)
+                {
+                    throw new FetchException(errorString);
+                }
+                resultIntent.putExtra(EXTRA_ERROR_STRING, errorString);
                 sendBroadcast(resultIntent);
                 finalizeFetch(target);
                 return;
@@ -145,8 +153,12 @@ public class FetchService extends Service
         {
             String format =
                 getString(R.string.fetch_error_unknown_action_format);
-            resultIntent.putExtra(EXTRA_ERROR_STRING, String.format(format,
-                        fetchAction));
+            String errorString = String.format(format, fetchAction);
+            if(testing)
+            {
+                throw new FetchException(errorString);
+            }
+            resultIntent.putExtra(EXTRA_ERROR_STRING, errorString);
         }
 
         sendBroadcast(resultIntent);
@@ -171,6 +183,11 @@ public class FetchService extends Service
         // lazy catch-all with pass-through to user
         catch(Throwable e)
         {
+            if(testing)
+            {
+                throw new FetchException("fetch of '" + output.getData() +
+                        "' failed", e);
+            }
             output.putExtra(EXTRA_ERROR_STRING, e.getMessage());
             return output;
         }
@@ -295,6 +312,19 @@ public class FetchService extends Service
         public synchronized void unset(Uri key)
         {
             remove(key);
+        }
+    }
+
+    public static class FetchException extends RuntimeException
+    {
+        public FetchException(String message)
+        {
+            super(message);
+        }
+
+        public FetchException(String message, Throwable cause)
+        {
+            super(message, cause);
         }
     }
 }
