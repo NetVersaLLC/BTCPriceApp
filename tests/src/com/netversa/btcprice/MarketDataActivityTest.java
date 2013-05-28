@@ -56,14 +56,14 @@ public class MarketDataActivityTest
         activity.setRequestedOrientation(
                 ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
-        assertEquals("marketData preservation",
-                activity.marketData, marketData);
-        assertEquals("cachedMarketData preservation",
-                activity.cachedMarketData, cachedMarketData);
-        assertEquals("errorString preservation",
-                activity.errorString, errorString);
-        assertEquals("expectResultsBy preservation",
-                activity.expectResultsBy, expectResultsBy);
+        assertEquals("post-rotation market data",
+                marketData, activity.marketData);
+        assertEquals("post-rotation market data cache",
+                cachedMarketData, activity.cachedMarketData);
+        assertEquals("post-rotation error string",
+                errorString, activity.errorString);
+        assertEquals("post-rotation results timeout",
+                expectResultsBy, activity.expectResultsBy);
     }
 
     public void testDataDisplay() throws Throwable
@@ -100,18 +100,18 @@ public class MarketDataActivityTest
             String.format(activity.getString(R.string.volume_format),
                     cachedMarketData.volume);
 
-        assertEquals("error readout correctness",
-                activity.errorView.getText(), expectedErrorText);
-        assertEquals("price readout correctness",
-                activity.priceView.getText(), expectedPriceText);
-        assertEquals("currency readout correctness",
-                activity.currencyView.getText(), expectedCurrencyText);
-        assertEquals("high price readout correctness",
-                activity.highPriceView.getText(), expectedHighText);
-        assertEquals("low price readout correctness",
-                activity.lowPriceView.getText(), expectedLowText);
-        assertEquals("volume readout correctness",
-                activity.volumeView.getText(), expectedVolumeText);
+        assertEquals("data-display error string",
+                expectedErrorText, activity.errorView.getText());
+        assertEquals("data-display price",
+                expectedPriceText, activity.priceView.getText());
+        assertEquals("data-display currency",
+                expectedCurrencyText, activity.currencyView.getText());
+        assertEquals("data-display high price",
+                expectedHighText, activity.highPriceView.getText());
+        assertEquals("data-display low price",
+                expectedLowText, activity.lowPriceView.getText());
+        assertEquals("data-display volume",
+                expectedVolumeText, activity.volumeView.getText());
     }
 
     public void testDataReception() throws Throwable
@@ -142,12 +142,10 @@ public class MarketDataActivityTest
             }
         });
 
-        assertEquals("correct storing of good MarketData", activity.marketData,
-                marketData);
-        assertEquals("correct caching of good MarketData",
-                activity.cachedMarketData, marketData);
-        assertEquals("clear error message on successful fetch",
-                activity.errorString, null);
+        assertEquals("good-fetch market data", marketData, activity.marketData);
+        assertEquals("good-fetch market data cache", marketData,
+                activity.cachedMarketData);
+        assertEquals("good-fetch error string", null, activity.errorString);
 
         // test failed fetch
 
@@ -164,11 +162,10 @@ public class MarketDataActivityTest
             }
         });
 
-        assertEquals("correct blanking of bad MarketData", activity.marketData,
-                null);
-        assertEquals("correct caching of previous good MarketData",
-                activity.cachedMarketData, marketData);
-        assertEquals("error message on failed fetch",
-                activity.errorString, errorString);
+        assertEquals("bad-fetch market data", null, activity.marketData);
+        assertEquals("bad-fetch market data cache", marketData,
+                activity.cachedMarketData);
+        assertEquals("bad-fetch error string", errorString,
+                activity.errorString);
     }
 }
