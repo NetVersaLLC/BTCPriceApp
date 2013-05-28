@@ -58,14 +58,9 @@ public class FetchService extends Service
     // for testing
     protected Map<String, Exchange> exchangeCache;
 
-    // when testing, exceptions are almost always fatal instead of being
-    // propagated to a calling activity or service by Intent
-    protected boolean testing;
-
     @Override
     public void onCreate()
     {
-        testing = false;
         activeTargets = new ActiveTargetSet();
         exchangeCache = new ConcurrentHashMap<String, Exchange>();
     }
@@ -112,10 +107,6 @@ public class FetchService extends Service
         {
             String format = getString(R.string.fetch_error_bad_target_format);
             String errorString = String.format(format, target.toString());
-            if(testing)
-            {
-                throw new FetchException(errorString);
-            }
             resultIntent.putExtra(EXTRA_ERROR_STRING, errorString);
             sendBroadcast(resultIntent);
             finalizeFetch(target);
@@ -133,10 +124,6 @@ public class FetchService extends Service
                 String format =
                     getString(R.string.fetch_error_wrong_arity_format);
                 String errorString = String.format(format, fetchAction, 2);
-                if(testing)
-                {
-                    throw new FetchException(errorString);
-                }
                 resultIntent.putExtra(EXTRA_ERROR_STRING, errorString);
                 sendBroadcast(resultIntent);
                 finalizeFetch(target);
@@ -154,10 +141,6 @@ public class FetchService extends Service
             String format =
                 getString(R.string.fetch_error_unknown_action_format);
             String errorString = String.format(format, fetchAction);
-            if(testing)
-            {
-                throw new FetchException(errorString);
-            }
             resultIntent.putExtra(EXTRA_ERROR_STRING, errorString);
         }
 
@@ -183,11 +166,6 @@ public class FetchService extends Service
         // lazy catch-all with pass-through to user
         catch(Throwable e)
         {
-            if(testing)
-            {
-                throw new FetchException("fetch of '" + output.getData() +
-                        "' failed", e);
-            }
             output.putExtra(EXTRA_ERROR_STRING, e.getMessage());
             return output;
         }
@@ -312,19 +290,6 @@ public class FetchService extends Service
         public synchronized void unset(Uri key)
         {
             remove(key);
-        }
-    }
-
-    public static class FetchException extends RuntimeException
-    {
-        public FetchException(String message)
-        {
-            super(message);
-        }
-
-        public FetchException(String message, Throwable cause)
-        {
-            super(message, cause);
         }
     }
 }
