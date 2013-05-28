@@ -57,4 +57,53 @@ public class FetchServiceTest extends SaneServiceTestCase<FetchService>
         joinService();
         ctx.unregisterReceiver(receiver);
     }
+
+    public void testUnknownAction() throws Throwable
+    {
+        String badTarget = "data://mtgox/derp";
+        String format =
+            ctx.getString(R.string.fetch_error_unknown_action_format);
+        final String expectedError = String.format(format, "derp");
+
+        BroadcastReceiver receiver = new BroadcastReceiver() {
+            public void onReceive(Context context, Intent intent) {
+                assertEquals("unknown-action market data", null,
+                    intent.getParcelableExtra(FetchService.EXTRA_MARKET_DATA));
+                assertEquals("unknown-action error string", expectedError,
+                    intent.getStringExtra(FetchService.EXTRA_ERROR_STRING));
+            }
+        };
+
+        ctx.registerReceiver(receiver, intentFilter);
+
+        startService(new Intent(FetchService.ACTION_REQUEST,
+                Uri.parse(badTarget)));
+
+        joinService();
+        ctx.unregisterReceiver(receiver);
+    }
+
+    public void testMarketBadArity() throws Throwable
+    {
+        String badTarget = "data://mtgox/market/USD";
+        String format = ctx.getString(R.string.fetch_error_wrong_arity_format);
+        final String expectedError = String.format(format, "market", 2);
+
+        BroadcastReceiver receiver = new BroadcastReceiver() {
+            public void onReceive(Context context, Intent intent) {
+                assertEquals("market-bad-arity market data", null,
+                    intent.getParcelableExtra(FetchService.EXTRA_MARKET_DATA));
+                assertEquals("market-bad-arity error string", expectedError,
+                    intent.getStringExtra(FetchService.EXTRA_ERROR_STRING));
+            }
+        };
+
+        ctx.registerReceiver(receiver, intentFilter);
+
+        startService(new Intent(FetchService.ACTION_REQUEST,
+                Uri.parse(badTarget)));
+
+        joinService();
+        ctx.unregisterReceiver(receiver);
+    }
 }
