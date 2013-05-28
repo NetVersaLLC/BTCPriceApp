@@ -8,9 +8,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
-import android.test.ServiceTestCase;
 
-public class FetchServiceTest extends ServiceTestCase<FetchService>
+public class FetchServiceTest extends SaneServiceTestCase<FetchService>
 {
     protected IntentFilter intentFilter;
     protected Context ctx;
@@ -41,16 +40,21 @@ public class FetchServiceTest extends ServiceTestCase<FetchService>
         String format = ctx.getString(R.string.fetch_error_bad_target_format);
         final String expectedError = String.format(format, badTarget);
 
-        ctx.registerReceiver(new BroadcastReceiver() {
+        BroadcastReceiver receiver = new BroadcastReceiver() {
             public void onReceive(Context context, Intent intent) {
                 assertEquals("null-exchange market data", null,
                     intent.getParcelableExtra(FetchService.EXTRA_MARKET_DATA));
                 assertEquals("null-exchange error string", expectedError,
                     intent.getStringExtra(FetchService.EXTRA_ERROR_STRING));
             }
-        }, intentFilter);
+        };
+
+        ctx.registerReceiver(receiver, intentFilter);
 
         startService(new Intent(FetchService.ACTION_REQUEST,
                 Uri.parse(badTarget)));
+
+        joinService();
+        ctx.unregisterReceiver(receiver);
     }
 }
