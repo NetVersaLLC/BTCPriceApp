@@ -3,16 +3,26 @@
  */
 package com.netversa.btcprice;
 
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
+import android.test.ServiceTestCase;
 
-public class FetchServiceTest extends SaneServiceTestCase<FetchService>
+import com.xeiam.xchange.Exchange;
+
+public class FetchServiceTest extends ServiceTestCase<FetchService>
 {
     protected IntentFilter intentFilter;
     protected Context ctx;
+    protected MarketData marketData;
+    protected Map mockExchangeCache;
 
     public FetchServiceTest()
     {
@@ -20,6 +30,15 @@ public class FetchServiceTest extends SaneServiceTestCase<FetchService>
 
         intentFilter = new IntentFilter(FetchService.ACTION_RESPONSE);
         intentFilter.addDataScheme(FetchService.DATA_SCHEME);
+
+        marketData = new MarketData("mtgox", "BTC", "USD",
+                new BigDecimal("1.00"), new BigDecimal("0.99"),
+                new BigDecimal("1.01"), new BigDecimal("1.99"),
+                new BigDecimal("0.01"), new BigDecimal("100.00"),
+                new Date(1369196546000l));
+
+        mockExchangeCache = new ConcurrentHashMap<String, Exchange>();
+        mockExchangeCache.put(MarketData.MT_GOX, new MockExchange());
     }
 
     protected void setUp() throws Exception
@@ -54,7 +73,9 @@ public class FetchServiceTest extends SaneServiceTestCase<FetchService>
         startService(new Intent(FetchService.ACTION_REQUEST,
                 Uri.parse(badTarget)));
 
-        joinService();
+        FetchService service = getService();
+        System.out.println(service);
+        service.testRunSemaphore.acquireUninterruptibly();
         ctx.unregisterReceiver(receiver);
     }
 
@@ -79,7 +100,9 @@ public class FetchServiceTest extends SaneServiceTestCase<FetchService>
         startService(new Intent(FetchService.ACTION_REQUEST,
                 Uri.parse(badTarget)));
 
-        joinService();
+        FetchService service = getService();
+        System.out.println(service);
+        service.testRunSemaphore.acquireUninterruptibly();
         ctx.unregisterReceiver(receiver);
     }
 
@@ -103,7 +126,33 @@ public class FetchServiceTest extends SaneServiceTestCase<FetchService>
         startService(new Intent(FetchService.ACTION_REQUEST,
                 Uri.parse(badTarget)));
 
-        joinService();
+        FetchService service = getService();
+        System.out.println(service);
+        service.testRunSemaphore.acquireUninterruptibly();
+        ctx.unregisterReceiver(receiver);
+    }
+
+    public void testMarketDataFetch() throws Throwable
+    {
+        String goodTarget = "data://mtgox/market/BTC/USD";
+
+        BroadcastReceiver receiver = new BroadcastReceiver() {
+            public void onReceive(Context context, Intent intent) {
+                assertEquals("market-fetch market data", marketData,
+                    intent.getParcelableExtra(FetchService.EXTRA_MARKET_DATA));
+                assertEquals("market-fetch error string", null,
+                    intent.getStringExtra(FetchService.EXTRA_ERROR_STRING));
+            }
+        };
+
+        ctx.registerReceiver(receiver, intentFilter);
+
+        startService(new Intent(FetchService.ACTION_REQUEST,
+                Uri.parse(goodTarget)));
+
+        FetchService service = getService();
+        System.out.println(service);
+        service.testRunSemaphore.acquireUninterruptibly();
         ctx.unregisterReceiver(receiver);
     }
 }

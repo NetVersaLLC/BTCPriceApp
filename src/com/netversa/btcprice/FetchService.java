@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Semaphore;
 
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -57,12 +58,28 @@ public class FetchService extends Service
     // having a cache inside FetchService makes for easy dependency injection
     // for testing
     protected Map<String, Exchange> exchangeCache;
+    protected Semaphore testRunSemaphore;
+
+    public FetchService()
+    {
+        super();
+        testRunSemaphore = new Semaphore(1);
+        testRunSemaphore.acquireUninterruptibly();
+    }
 
     @Override
     public void onCreate()
     {
         activeTargets = new ActiveTargetSet();
         exchangeCache = new ConcurrentHashMap<String, Exchange>();
+    }
+
+    @Override
+    public void onDestroy()
+    {
+        activeTargets = new ActiveTargetSet();
+        exchangeCache = new ConcurrentHashMap<String, Exchange>();
+        testRunSemaphore.release();
     }
 
     @Override
@@ -152,7 +169,6 @@ public class FetchService extends Service
     protected Intent fetchMarketData(Intent output, String exchangeName,
             String baseCurrency, String counterCurrency)
     {
-
         // TODO select exchange based on URI
         Ticker ticker;
         try
