@@ -63,8 +63,7 @@ public class FetchService extends Service
     public FetchService()
     {
         super();
-        testRunSemaphore = new Semaphore(1);
-        testRunSemaphore.acquireUninterruptibly();
+        testRunSemaphore = new Semaphore(0);
     }
 
     @Override
@@ -72,14 +71,6 @@ public class FetchService extends Service
     {
         activeTargets = new ActiveTargetSet();
         exchangeCache = new ConcurrentHashMap<String, Exchange>();
-    }
-
-    @Override
-    public void onDestroy()
-    {
-        activeTargets = new ActiveTargetSet();
-        exchangeCache = new ConcurrentHashMap<String, Exchange>();
-        testRunSemaphore.release();
     }
 
     @Override
@@ -210,6 +201,7 @@ public class FetchService extends Service
 
             if(activeTargets.size() == 0)
             {
+                testRunSemaphore.release();
                 stopSelf();
             }
         }

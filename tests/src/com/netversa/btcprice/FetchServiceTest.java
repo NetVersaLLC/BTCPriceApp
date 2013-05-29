@@ -62,7 +62,8 @@ public class FetchServiceTest extends ServiceTestCase<FetchService>
         BroadcastReceiver receiver = new BroadcastReceiver() {
             public void onReceive(Context context, Intent intent) {
                 assertEquals("null-exchange market data", null,
-                    intent.getParcelableExtra(FetchService.EXTRA_MARKET_DATA));
+                    (MarketData) intent.getParcelableExtra(
+                        FetchService.EXTRA_MARKET_DATA));
                 assertEquals("null-exchange error string", expectedError,
                     intent.getStringExtra(FetchService.EXTRA_ERROR_STRING));
             }
@@ -74,7 +75,7 @@ public class FetchServiceTest extends ServiceTestCase<FetchService>
                 Uri.parse(badTarget)));
 
         FetchService service = getService();
-        System.out.println(service);
+        assertNotNull("null-exchage test race condition!", service);
         service.testRunSemaphore.acquireUninterruptibly();
         ctx.unregisterReceiver(receiver);
     }
@@ -89,7 +90,8 @@ public class FetchServiceTest extends ServiceTestCase<FetchService>
         BroadcastReceiver receiver = new BroadcastReceiver() {
             public void onReceive(Context context, Intent intent) {
                 assertEquals("unknown-action market data", null,
-                    intent.getParcelableExtra(FetchService.EXTRA_MARKET_DATA));
+                    (MarketData) intent.getParcelableExtra(
+                        FetchService.EXTRA_MARKET_DATA));
                 assertEquals("unknown-action error string", expectedError,
                     intent.getStringExtra(FetchService.EXTRA_ERROR_STRING));
             }
@@ -101,7 +103,7 @@ public class FetchServiceTest extends ServiceTestCase<FetchService>
                 Uri.parse(badTarget)));
 
         FetchService service = getService();
-        System.out.println(service);
+        assertNotNull("unknown-action test race condition!", service);
         service.testRunSemaphore.acquireUninterruptibly();
         ctx.unregisterReceiver(receiver);
     }
@@ -115,7 +117,8 @@ public class FetchServiceTest extends ServiceTestCase<FetchService>
         BroadcastReceiver receiver = new BroadcastReceiver() {
             public void onReceive(Context context, Intent intent) {
                 assertEquals("market-bad-arity market data", null,
-                    intent.getParcelableExtra(FetchService.EXTRA_MARKET_DATA));
+                    (MarketData) intent.getParcelableExtra(
+                        FetchService.EXTRA_MARKET_DATA));
                 assertEquals("market-bad-arity error string", expectedError,
                     intent.getStringExtra(FetchService.EXTRA_ERROR_STRING));
             }
@@ -127,7 +130,7 @@ public class FetchServiceTest extends ServiceTestCase<FetchService>
                 Uri.parse(badTarget)));
 
         FetchService service = getService();
-        System.out.println(service);
+        assertNotNull("market-bad-arity test race condition!", service);
         service.testRunSemaphore.acquireUninterruptibly();
         ctx.unregisterReceiver(receiver);
     }
@@ -139,7 +142,8 @@ public class FetchServiceTest extends ServiceTestCase<FetchService>
         BroadcastReceiver receiver = new BroadcastReceiver() {
             public void onReceive(Context context, Intent intent) {
                 assertEquals("market-fetch market data", marketData,
-                    intent.getParcelableExtra(FetchService.EXTRA_MARKET_DATA));
+                    (MarketData) intent.getParcelableExtra(
+                        FetchService.EXTRA_MARKET_DATA));
                 assertEquals("market-fetch error string", null,
                     intent.getStringExtra(FetchService.EXTRA_ERROR_STRING));
             }
@@ -151,7 +155,7 @@ public class FetchServiceTest extends ServiceTestCase<FetchService>
                 Uri.parse(goodTarget)));
 
         FetchService service = getService();
-        System.out.println(service);
+        assertNotNull("market-fetch test race condition!", service);
         service.testRunSemaphore.acquireUninterruptibly();
         ctx.unregisterReceiver(receiver);
     }
