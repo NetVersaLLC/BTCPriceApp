@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -20,6 +21,9 @@ import com.xeiam.xchange.Exchange;
 
 public class FetchServiceTest extends ServiceTestCase<FetchService>
 {
+    // TODO shorten when test dependency on network is removed
+    public static final long TEST_TIMEOUT_MS = 10000l;
+
     protected IntentFilter intentFilter;
     protected Context ctx;
     protected MarketData marketData;
@@ -77,7 +81,11 @@ public class FetchServiceTest extends ServiceTestCase<FetchService>
         startService(new Intent(FetchService.ACTION_REQUEST,
                 Uri.parse(badTarget)));
 
-        completeCondition.acquireUninterruptibly();
+        if(!completeCondition.tryAcquire(TEST_TIMEOUT_MS,
+                    TimeUnit.MILLISECONDS))
+        {
+            fail("null-exchange timed out");
+        }
         ctx.unregisterReceiver(receiver);
     }
 
@@ -105,7 +113,11 @@ public class FetchServiceTest extends ServiceTestCase<FetchService>
         startService(new Intent(FetchService.ACTION_REQUEST,
                 Uri.parse(badTarget)));
 
-        completeCondition.acquireUninterruptibly();
+        if(!completeCondition.tryAcquire(TEST_TIMEOUT_MS,
+                    TimeUnit.MILLISECONDS))
+        {
+            fail("unknown-action timed out");
+        }
         ctx.unregisterReceiver(receiver);
     }
 
@@ -132,7 +144,11 @@ public class FetchServiceTest extends ServiceTestCase<FetchService>
         startService(new Intent(FetchService.ACTION_REQUEST,
                 Uri.parse(badTarget)));
 
-        completeCondition.acquireUninterruptibly();
+        if(!completeCondition.tryAcquire(TEST_TIMEOUT_MS,
+                    TimeUnit.MILLISECONDS))
+        {
+            fail("market-bad-arity timed out");
+        }
         ctx.unregisterReceiver(receiver);
     }
 
@@ -162,7 +178,11 @@ public class FetchServiceTest extends ServiceTestCase<FetchService>
         startService(new Intent(FetchService.ACTION_REQUEST,
                 Uri.parse(goodTarget)));
 
-        completeCondition.acquireUninterruptibly();
+        if(!completeCondition.tryAcquire(TEST_TIMEOUT_MS,
+                    TimeUnit.MILLISECONDS))
+        {
+            fail("market-fetch timed out");
+        }
         ctx.unregisterReceiver(receiver);
     }
 }
