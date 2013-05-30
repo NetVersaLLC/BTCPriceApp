@@ -67,11 +67,11 @@ public class FetchServiceTest extends ServiceTestCase<FetchService>
 
         BroadcastReceiver receiver = new BroadcastReceiver() {
             public void onReceive(Context context, Intent intent) {
+                assertEquals("null-exchange error string", expectedError,
+                    intent.getStringExtra(FetchService.EXTRA_ERROR_STRING));
                 assertEquals("null-exchange market data", null,
                     (MarketData) intent.getParcelableExtra(
                         FetchService.EXTRA_MARKET_DATA));
-                assertEquals("null-exchange error string", expectedError,
-                    intent.getStringExtra(FetchService.EXTRA_ERROR_STRING));
                 completeCondition.release();
             }
         };
@@ -99,11 +99,11 @@ public class FetchServiceTest extends ServiceTestCase<FetchService>
 
         BroadcastReceiver receiver = new BroadcastReceiver() {
             public void onReceive(Context context, Intent intent) {
+                assertEquals("unknown-action error string", expectedError,
+                    intent.getStringExtra(FetchService.EXTRA_ERROR_STRING));
                 assertEquals("unknown-action market data", null,
                     (MarketData) intent.getParcelableExtra(
                         FetchService.EXTRA_MARKET_DATA));
-                assertEquals("unknown-action error string", expectedError,
-                    intent.getStringExtra(FetchService.EXTRA_ERROR_STRING));
                 completeCondition.release();
             }
         };
@@ -130,11 +130,11 @@ public class FetchServiceTest extends ServiceTestCase<FetchService>
 
         BroadcastReceiver receiver = new BroadcastReceiver() {
             public void onReceive(Context context, Intent intent) {
+                assertEquals("market-bad-arity error string", expectedError,
+                    intent.getStringExtra(FetchService.EXTRA_ERROR_STRING));
                 assertEquals("market-bad-arity market data", null,
                     (MarketData) intent.getParcelableExtra(
                         FetchService.EXTRA_MARKET_DATA));
-                assertEquals("market-bad-arity error string", expectedError,
-                    intent.getStringExtra(FetchService.EXTRA_ERROR_STRING));
                 completeCondition.release();
             }
         };
@@ -159,11 +159,11 @@ public class FetchServiceTest extends ServiceTestCase<FetchService>
 
         BroadcastReceiver receiver = new BroadcastReceiver() {
             public void onReceive(Context context, Intent intent) {
+                assertEquals("market-fetch error string", null,
+                    intent.getStringExtra(FetchService.EXTRA_ERROR_STRING));
                 assertEquals("market-fetch market data", marketData,
                     (MarketData) intent.getParcelableExtra(
                         FetchService.EXTRA_MARKET_DATA));
-                assertEquals("market-fetch error string", null,
-                    intent.getStringExtra(FetchService.EXTRA_ERROR_STRING));
                 completeCondition.release();
             }
         };

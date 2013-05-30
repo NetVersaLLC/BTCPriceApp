@@ -58,11 +58,17 @@ public class FetchService extends Service
     // for testing
     protected Map<String, Exchange> exchangeCache;
 
+    public FetchService()
+    {
+        super();
+        activeTargets = new ActiveTargetSet();
+        exchangeCache = new ConcurrentHashMap<String, Exchange>();
+    }
+
     @Override
     public void onCreate()
     {
-        activeTargets = new ActiveTargetSet();
-        exchangeCache = new ConcurrentHashMap<String, Exchange>();
+        super.onCreate();
     }
 
     @Override
