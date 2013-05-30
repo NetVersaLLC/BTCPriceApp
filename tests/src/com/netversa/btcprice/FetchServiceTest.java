@@ -75,7 +75,7 @@ public class FetchServiceTest extends ServiceTestCase<FetchService>
                 Uri.parse(badTarget)));
 
         FetchService service = getService();
-        assertNotNull("null-exchage test race condition!", service);
+        assertNotNull("null-exchage service not created!", service);
         service.testRunSemaphore.acquireUninterruptibly();
         ctx.unregisterReceiver(receiver);
     }
@@ -103,7 +103,7 @@ public class FetchServiceTest extends ServiceTestCase<FetchService>
                 Uri.parse(badTarget)));
 
         FetchService service = getService();
-        assertNotNull("unknown-action test race condition!", service);
+        assertNotNull("unknown-action service not created!", service);
         service.testRunSemaphore.acquireUninterruptibly();
         ctx.unregisterReceiver(receiver);
     }
@@ -130,7 +130,7 @@ public class FetchServiceTest extends ServiceTestCase<FetchService>
                 Uri.parse(badTarget)));
 
         FetchService service = getService();
-        assertNotNull("market-bad-arity test race condition!", service);
+        assertNotNull("market-bad-arity service not created!", service);
         service.testRunSemaphore.acquireUninterruptibly();
         ctx.unregisterReceiver(receiver);
     }
@@ -155,7 +155,7 @@ public class FetchServiceTest extends ServiceTestCase<FetchService>
                 Uri.parse(goodTarget)));
 
         FetchService service = getService();
-        assertNotNull("market-fetch test race condition!", service);
+        assertNotNull("market-fetch service not created!", service);
         service.testRunSemaphore.acquireUninterruptibly();
         ctx.unregisterReceiver(receiver);
     }
