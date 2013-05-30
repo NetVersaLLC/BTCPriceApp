@@ -22,7 +22,7 @@ public class FetchServiceTest extends ServiceTestCase<FetchService>
     protected IntentFilter intentFilter;
     protected Context ctx;
     protected MarketData marketData;
-    protected Map mockExchangeCache;
+    protected Map<String, Exchange> mockExchangeCache;
 
     public FetchServiceTest()
     {
