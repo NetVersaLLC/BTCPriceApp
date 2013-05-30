@@ -48,6 +48,56 @@ public class MarketData implements Parcelable
     }
 
     @Override
+    public boolean equals(Object obj)
+    {
+        if(obj == null)
+        {
+            return false;
+        }
+        if(obj == this)
+        {
+            return true;
+        }
+        if(!(obj instanceof MarketData))
+        {
+            return false;
+        }
+
+        MarketData rhs = (MarketData) obj;
+        if(rhs.exchangeName != exchangeName ||
+                rhs.baseCurrency != baseCurrency ||
+                rhs.counterCurrency != counterCurrency ||
+                rhs.lastPrice != lastPrice ||
+                rhs.bidPrice != bidPrice ||
+                rhs.askPrice != askPrice ||
+                rhs.highPrice != highPrice ||
+                rhs.lowPrice != lowPrice ||
+                rhs.volume != volume ||
+                rhs.timestamp != timestamp)
+        {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int output = 0;
+        output += exchangeName != null ? exchangeName.hashCode() : 0;
+        output += baseCurrency != null ? baseCurrency.hashCode() : 0;
+        output += counterCurrency != null ? counterCurrency.hashCode() : 0;
+        output += lastPrice != null ? lastPrice.hashCode() : 0;
+        output += bidPrice != null ? bidPrice.hashCode() : 0;
+        output += askPrice != null ? askPrice.hashCode() : 0;
+        output += highPrice != null ? highPrice.hashCode() : 0;
+        output += lowPrice != null ? lowPrice.hashCode() : 0;
+        output += volume != null ? volume.hashCode() : 0;
+        output += timestamp != null ? timestamp.hashCode() : 0;
+        return output;
+    }
+
+    @Override
     public int describeContents()
     {
         return 0;
