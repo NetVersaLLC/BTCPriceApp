@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Semaphore;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -55,6 +56,7 @@ public class FetchServiceTest extends ServiceTestCase<FetchService>
 
     public void testNullExchange() throws Throwable
     {
+        final Semaphore completeCondition = new Semaphore(0);
         String badTarget = "data:///market/USD/BTC";
         String format = ctx.getString(R.string.fetch_error_bad_target_format);
         final String expectedError = String.format(format, badTarget);
@@ -66,6 +68,7 @@ public class FetchServiceTest extends ServiceTestCase<FetchService>
                         FetchService.EXTRA_MARKET_DATA));
                 assertEquals("null-exchange error string", expectedError,
                     intent.getStringExtra(FetchService.EXTRA_ERROR_STRING));
+                completeCondition.release();
             }
         };
 
@@ -74,14 +77,13 @@ public class FetchServiceTest extends ServiceTestCase<FetchService>
         startService(new Intent(FetchService.ACTION_REQUEST,
                 Uri.parse(badTarget)));
 
-        FetchService service = getService();
-        assertNotNull("null-exchage service not created!", service);
-        service.testRunSemaphore.acquireUninterruptibly();
+        completeCondition.acquireUninterruptibly();
         ctx.unregisterReceiver(receiver);
     }
 
     public void testUnknownAction() throws Throwable
     {
+        final Semaphore completeCondition = new Semaphore(0);
         String badTarget = "data://mtgox/derp";
         String format =
             ctx.getString(R.string.fetch_error_unknown_action_format);
@@ -94,6 +96,7 @@ public class FetchServiceTest extends ServiceTestCase<FetchService>
                         FetchService.EXTRA_MARKET_DATA));
                 assertEquals("unknown-action error string", expectedError,
                     intent.getStringExtra(FetchService.EXTRA_ERROR_STRING));
+                completeCondition.release();
             }
         };
 
@@ -102,14 +105,13 @@ public class FetchServiceTest extends ServiceTestCase<FetchService>
         startService(new Intent(FetchService.ACTION_REQUEST,
                 Uri.parse(badTarget)));
 
-        FetchService service = getService();
-        assertNotNull("unknown-action service not created!", service);
-        service.testRunSemaphore.acquireUninterruptibly();
+        completeCondition.acquireUninterruptibly();
         ctx.unregisterReceiver(receiver);
     }
 
     public void testMarketBadArity() throws Throwable
     {
+        final Semaphore completeCondition = new Semaphore(0);
         String badTarget = "data://mtgox/market/USD";
         String format = ctx.getString(R.string.fetch_error_wrong_arity_format);
         final String expectedError = String.format(format, "market", 2);
@@ -121,6 +123,7 @@ public class FetchServiceTest extends ServiceTestCase<FetchService>
                         FetchService.EXTRA_MARKET_DATA));
                 assertEquals("market-bad-arity error string", expectedError,
                     intent.getStringExtra(FetchService.EXTRA_ERROR_STRING));
+                completeCondition.release();
             }
         };
 
@@ -129,14 +132,13 @@ public class FetchServiceTest extends ServiceTestCase<FetchService>
         startService(new Intent(FetchService.ACTION_REQUEST,
                 Uri.parse(badTarget)));
 
-        FetchService service = getService();
-        assertNotNull("market-bad-arity service not created!", service);
-        service.testRunSemaphore.acquireUninterruptibly();
+        completeCondition.acquireUninterruptibly();
         ctx.unregisterReceiver(receiver);
     }
 
     public void testMarketDataFetch() throws Throwable
     {
+        final Semaphore completeCondition = new Semaphore(0);
         String goodTarget = "data://mtgox/market/BTC/USD";
 
         BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -146,17 +148,21 @@ public class FetchServiceTest extends ServiceTestCase<FetchService>
                         FetchService.EXTRA_MARKET_DATA));
                 assertEquals("market-fetch error string", null,
                     intent.getStringExtra(FetchService.EXTRA_ERROR_STRING));
+                completeCondition.release();
             }
         };
 
         ctx.registerReceiver(receiver, intentFilter);
 
+        setupService();
+        FetchService service = getService();
+        assertNotNull("market-fetch service not created!", service);
+        service.exchangeCache = mockExchangeCache;
+
         startService(new Intent(FetchService.ACTION_REQUEST,
                 Uri.parse(goodTarget)));
 
-        FetchService service = getService();
-        assertNotNull("market-fetch service not created!", service);
-        service.testRunSemaphore.acquireUninterruptibly();
+        completeCondition.acquireUninterruptibly();
         ctx.unregisterReceiver(receiver);
     }
 }

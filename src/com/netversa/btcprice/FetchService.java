@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Semaphore;
 
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -58,13 +57,6 @@ public class FetchService extends Service
     // having a cache inside FetchService makes for easy dependency injection
     // for testing
     protected Map<String, Exchange> exchangeCache;
-    protected Semaphore testRunSemaphore;
-
-    public FetchService()
-    {
-        super();
-        testRunSemaphore = new Semaphore(0);
-    }
 
     @Override
     public void onCreate()
@@ -201,7 +193,6 @@ public class FetchService extends Service
 
             if(activeTargets.size() == 0)
             {
-                testRunSemaphore.release();
                 stopSelf();
             }
         }
