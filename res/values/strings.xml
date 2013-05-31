@@ -9,6 +9,7 @@
     <string name="fetch_error_bad_target_format" formatted="false">invalid target \'%s\'</string>
     <string name="fetch_error_wrong_arity_format" formatted="false">action \'%s\' requires %d arguments</string>
     <string name="fetch_error_unknown_action_format" formatted="false">unknown action \'%s\'</string>
+    <string name="fetch_error_unknown_exchange_format" formatted="false">unknown exchange \'%s\'</string>
 
     <string name="menu_refresh">refresh</string>
 

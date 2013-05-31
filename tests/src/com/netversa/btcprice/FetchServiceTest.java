@@ -121,6 +121,38 @@ public class FetchServiceTest extends ServiceTestCase<FetchService>
         ctx.unregisterReceiver(receiver);
     }
 
+    public void testUnknownExchange() throws Throwable
+    {
+        final Semaphore completeCondition = new Semaphore(0);
+        String badTarget = "data://notanexchange/market/BTC/USD";
+        String format =
+            ctx.getString(R.string.fetch_error_unknown_exchange_format);
+        final String expectedError = String.format(format, "notanexchange");
+
+        BroadcastReceiver receiver = new BroadcastReceiver() {
+            public void onReceive(Context context, Intent intent) {
+                assertEquals("unknown-exchange error string", expectedError,
+                    intent.getStringExtra(FetchService.EXTRA_ERROR_STRING));
+                assertEquals("unknown-exchange market data", null,
+                    (MarketData) intent.getParcelableExtra(
+                        FetchService.EXTRA_MARKET_DATA));
+                completeCondition.release();
+            }
+        };
+
+        ctx.registerReceiver(receiver, intentFilter);
+
+        startService(new Intent(FetchService.ACTION_REQUEST,
+                Uri.parse(badTarget)));
+
+        if(!completeCondition.tryAcquire(TEST_TIMEOUT_MS,
+                    TimeUnit.MILLISECONDS))
+        {
+            fail("unknown-exchange timed out");
+        }
+        ctx.unregisterReceiver(receiver);
+    }
+
     public void testMarketBadArity() throws Throwable
     {
         final Semaphore completeCondition = new Semaphore(0);

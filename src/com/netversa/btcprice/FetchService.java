@@ -256,7 +256,13 @@ public class FetchService extends Service
                     MtGoxExchange.class.getName());
             exchangeCache.put(exchangeName, output);
         }
-        // TODO throw exception if unknown exchange
+        else
+        {
+            String errorFormat =
+                getString(R.string.fetch_error_unknown_exchange_format);
+            String errorString = String.format(errorFormat, exchangeName);
+            throw new IllegalArgumentException(errorString);
+        }
         return output;
     }
 
