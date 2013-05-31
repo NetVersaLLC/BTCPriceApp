@@ -171,7 +171,14 @@ public class FetchService extends Service
         // lazy catch-all with pass-through to user
         catch(Throwable e)
         {
-            output.putExtra(EXTRA_ERROR_STRING, e.getMessage());
+            // prefer a concise human-readable error but fall back on the
+            // generally more verbose getString()
+            String errorString = e.getMessage();
+            if(errorString == null)
+            {
+                errorString = e.toString();
+            }
+            output.putExtra(EXTRA_ERROR_STRING, errorString);
             return output;
         }
 
