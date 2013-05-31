@@ -63,21 +63,40 @@ public class MarketData implements Parcelable
             return false;
         }
 
+
         MarketData rhs = (MarketData) obj;
-        if(rhs.exchangeName != exchangeName ||
-                rhs.baseCurrency != baseCurrency ||
-                rhs.counterCurrency != counterCurrency ||
-                rhs.lastPrice != lastPrice ||
-                rhs.bidPrice != bidPrice ||
-                rhs.askPrice != askPrice ||
-                rhs.highPrice != highPrice ||
-                rhs.lowPrice != lowPrice ||
-                rhs.volume != volume ||
-                rhs.timestamp != timestamp)
+
+        if(!eq(rhs.exchangeName, exchangeName) ||
+                !eq(rhs.baseCurrency, baseCurrency) ||
+                !eq(rhs.counterCurrency, counterCurrency) ||
+                !eq(rhs.lastPrice, lastPrice) ||
+                !eq(rhs.bidPrice, bidPrice) ||
+                !eq(rhs.askPrice, askPrice) ||
+                !eq(rhs.highPrice, highPrice) ||
+                !eq(rhs.lowPrice, lowPrice) ||
+                !eq(rhs.volume, volume) ||
+                !eq(rhs.timestamp, timestamp))
         {
             return false;
         }
         return true;
+    }
+
+    /** Simple equals() helper function.  Checks if either operand is null and
+     * if not punts to the equals() function of the left-hand operand.
+     */
+    protected boolean eq(Object lhs, Object rhs)
+    {
+        if(lhs == null && rhs == null)
+        {
+            return true;
+        }
+        if(lhs == null || rhs == null)
+        {
+            return false;
+        }
+
+        return lhs.equals(rhs);
     }
 
     @Override

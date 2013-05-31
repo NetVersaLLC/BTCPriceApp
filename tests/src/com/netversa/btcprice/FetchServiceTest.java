@@ -43,7 +43,7 @@ public class FetchServiceTest extends ServiceTestCase<FetchService>
                 new Date(1369196546000l));
 
         mockExchangeCache = new ConcurrentHashMap<String, Exchange>();
-        mockExchangeCache.put(MarketData.MT_GOX, new MockExchange());
+        mockExchangeCache.put(MarketData.MT_GOX, new MockExchange(marketData));
     }
 
     protected void setUp() throws Exception

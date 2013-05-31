@@ -13,6 +13,13 @@ import com.xeiam.xchange.service.streaming.StreamingExchangeService;
 
 public class MockExchange implements Exchange
 {
+    protected MarketData marketData;
+
+    public MockExchange(MarketData dummyData)
+    {
+        marketData = dummyData;
+    }
+
     public ExchangeSpecification getExchangeSpecification()
     {
         throw new UnsupportedOperationException();
@@ -30,7 +37,7 @@ public class MockExchange implements Exchange
 
     public PollingMarketDataService getPollingMarketDataService()
     {
-        throw new UnsupportedOperationException();
+        return new MockPollingMarketDataService(marketData);
     }
 
     public PollingMarketDataService getPollingMarketDataService(
