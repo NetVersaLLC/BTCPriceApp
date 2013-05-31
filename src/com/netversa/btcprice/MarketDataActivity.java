@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -26,8 +27,11 @@ public class MarketDataActivity extends Activity
     protected String errorString;
     // by when should we be hearing back from FetchService?
     protected long expectResultsBy;
+    // TODO recreate timeout from bundle
+    protected ToggleRunnable timeout;
 
     protected BroadcastReceiver responseReceiver;
+    protected Handler handler;
 
     // views
     protected TextView errorView;
@@ -42,6 +46,9 @@ public class MarketDataActivity extends Activity
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+
+        handler = new Handler();
+
         setContentView(R.layout.market_data_activity);
 
         // grab views
