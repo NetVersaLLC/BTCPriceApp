@@ -168,4 +168,25 @@ public class MarketDataActivityTest
         assertEquals("bad-fetch error string", errorString,
                 activity.errorString);
     }
+
+    public void testTimeout() throws Throwable
+    {
+        startActivity(new Intent(), null, null);
+        activity = getActivity();
+
+        activity.cachedMarketData = cachedMarketData;
+        activity.marketData = marketData;
+        activity.errorString = null;
+
+        String expectedError =
+            activity.getString(R.string.fetch_error_timed_out);
+
+        runTestOnUiThread(activity.timeout);
+
+        assertEquals("timeout market data", null, activity.marketData);
+        assertEquals("timeout market data cache", cachedMarketData,
+                activity.cachedMarketData);
+        assertEquals("timeout error string", expectedError,
+                activity.errorString);
+    }
 }
