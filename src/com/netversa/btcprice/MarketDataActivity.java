@@ -28,7 +28,7 @@ public class MarketDataActivity extends Activity
     // by when should we be hearing back from FetchService?
     protected long expectResultsBy;
     // TODO recreate timeout from bundle
-    protected ToggleRunnable timeout;
+    protected Runnable timeout;
 
     protected BroadcastReceiver responseReceiver;
     protected Handler handler;
