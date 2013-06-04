@@ -8,5 +8,5 @@ package com.netversa.btcprice;
 public class Defaults
 {
     // 30 seconds in ms
-    public static final int FETCH_TIMEOUT = 30000;
+    public static final long FETCH_TIMEOUT = 30000;
 }

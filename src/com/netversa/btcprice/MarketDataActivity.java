@@ -7,9 +7,12 @@ import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.SystemClock;
+import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -32,6 +35,7 @@ public class MarketDataActivity extends Activity
 
     protected BroadcastReceiver responseReceiver;
     protected Handler handler;
+    protected SharedPreferences prefs;
 
     // views
     protected TextView errorView;
@@ -48,6 +52,15 @@ public class MarketDataActivity extends Activity
         super.onCreate(savedInstanceState);
 
         handler = new Handler();
+        timeout = new Runnable() {
+            @Override
+            public void run() {
+                errorString = getString(R.string.fetch_error_timed_out);
+                marketData = null;
+                completeRefresh();
+            }
+        };
+        prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         setContentView(R.layout.market_data_activity);
 
@@ -74,48 +87,65 @@ public class MarketDataActivity extends Activity
             expectResultsBy = savedInstanceState.getLong("expectResultsBy");
         }
 
-        // if there's no market data to speak of, fetch it.  If a fetch is in
-        // progress the request will be ignored
-        if(cachedMarketData == null)
+        // only automatically start a fetch if the activity is starting for the
+        // first time
+        if(savedInstanceState == null)
         {
             startRefresh();
         }
         else
         {
-            completeRefresh();
+            // otherwise if a fetch isn't underway display the current data
+            if(expectResultsBy == 0)
+            {
+                displayData();
+            }
+            // if a fetch is underway, display refresh indicators or trigger
+            // timeout as necessary
+            else if(SystemClock.uptimeMillis() < expectResultsBy)
+            {
+                displayRefreshIndicators();
+                handler.postAtTime(timeout, expectResultsBy);
+            }
+            else
+            {
+                timeout.run();
+            }
         }
     }
-
-    /** Tell the FetchService to get market data and hook into its response.
+    
+    /** Show the user that a refresh is underway.
      */
-    protected void startRefresh()
+    protected void displayRefreshIndicators()
     {
-        showError(null);
+        showError(errorString);
 
         priceView.setText(R.string.price_dummy);
         currencyView.setText(R.string.currency_pair_dummy);
         highPriceView.setText(R.string.high_price_dummy);
         lowPriceView.setText(R.string.low_price_dummy);
         volumeView.setText(R.string.volume_dummy);
+    }
+
+    /** Tell the FetchService to get market data and hook into its response.
+     */
+    protected void startRefresh()
+    {
+        errorString = null;
+        displayRefreshIndicators();
 
         FetchService.requestMarket(this, responseReceiver, MarketData.MT_GOX,
                 Currencies.BTC, Currencies.USD);
+
+        expectResultsBy = SystemClock.uptimeMillis() +
+            prefs.getLong("fetch_timeout", Defaults.FETCH_TIMEOUT);
+        handler.postAtTime(timeout, expectResultsBy);
     }
 
-    /** Take data from MarketData object and update views.
+    /** Populate views with instance data.
      */
-    protected void completeRefresh()
+    protected void displayData()
     {
-        try
-        {
-            unregisterReceiver(responseReceiver);
-        }
-        catch(IllegalArgumentException e)
-        {
-            // evidently Android doesn't have a way to unregister if necessary,
-            // nor a way to check if a receiver is registered.
-        }
-
         if(errorString != null)
         {
             showError(errorString);
@@ -141,6 +171,25 @@ public class MarketDataActivity extends Activity
             volumeView.setText(String.format(getString(R.string.volume_format),
                         cachedMarketData.volume));
         }
+    }
+
+    /** Clean up after a refresh and display content.
+     */
+    protected void completeRefresh()
+    {
+        expectResultsBy = 0;
+        handler.removeCallbacks(timeout);
+        try
+        {
+            unregisterReceiver(responseReceiver);
+        }
+        catch(IllegalArgumentException e)
+        {
+            // evidently Android doesn't have a way to unregister if necessary,
+            // nor a way to check if a receiver is registered.
+        }
+
+        displayData();
     }
 
     /** Reveal the error view and show a message in it, or hide it.
