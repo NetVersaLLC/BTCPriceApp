@@ -7,8 +7,12 @@ import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.SystemClock;
+import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -26,8 +30,12 @@ public class MarketDataActivity extends Activity
     protected String errorString;
     // by when should we be hearing back from FetchService?
     protected long expectResultsBy;
+    // TODO recreate timeout from bundle
+    protected Runnable timeout;
 
     protected BroadcastReceiver responseReceiver;
+    protected Handler handler;
+    protected SharedPreferences prefs;
 
     // views
     protected TextView errorView;
@@ -42,6 +50,18 @@ public class MarketDataActivity extends Activity
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+
+        handler = new Handler();
+        timeout = new Runnable() {
+            @Override
+            public void run() {
+                errorString = getString(R.string.fetch_error_timed_out);
+                marketData = null;
+                completeFetch();
+            }
+        };
+        prefs = PreferenceManager.getDefaultSharedPreferences(this);
+
         setContentView(R.layout.market_data_activity);
 
         // grab views
@@ -67,38 +87,88 @@ public class MarketDataActivity extends Activity
             expectResultsBy = savedInstanceState.getLong("expectResultsBy");
         }
 
-        // if there's no market data to speak of, fetch it.  If a fetch is in
-        // progress the request will be ignored
-        if(cachedMarketData == null)
+        // only automatically start a fetch if the activity is starting for the
+        // first time
+        if(savedInstanceState == null)
         {
-            startRefresh();
+            startFetch();
         }
         else
         {
-            completeRefresh();
+            // otherwise if a fetch isn't underway display the current data
+            if(expectResultsBy == 0)
+            {
+                displayData();
+            }
+            // if a fetch is underway, display refresh indicators or trigger
+            // timeout as necessary
+            else if(SystemClock.uptimeMillis() < expectResultsBy)
+            {
+                resumeFetch();
+            }
+            else
+            {
+                timeout.run();
+            }
         }
     }
 
-    /** Tell the FetchService to get market data and hook into its response.
+    /** Start a fetch and sync the UI to it.
      */
-    protected void startRefresh()
+    protected void startFetch()
     {
-        showError(null);
+        initFetch(false);
+    }
+
+    /** Resync the UI with a fetch in progress.
+     */
+    protected void resumeFetch()
+    {
+        initFetch(true);
+    }
+
+    /** Tell the FetchService to get market data and hook into its response.
+     * This method is only called by startFetch and resumeFetch.
+     * @param resuming a fetch is already underway so don't modify any state
+     */
+    protected void initFetch(boolean resuming)
+    {
+        if(!resuming)
+        {
+            errorString = null;
+        }
+        displayFetchIndicators();
+
+        FetchService.requestMarket(this, responseReceiver, MarketData.MT_GOX,
+                Currencies.BTC, Currencies.USD);
+
+        if(!resuming)
+        {
+            expectResultsBy = SystemClock.uptimeMillis() +
+                prefs.getLong("fetch_timeout", Defaults.FETCH_TIMEOUT);
+        }
+        handler.postAtTime(timeout, expectResultsBy);
+    }
+    
+    /** Show the user that a refresh is underway.
+     */
+    protected void displayFetchIndicators()
+    {
+        showError(errorString);
 
         priceView.setText(R.string.price_dummy);
         currencyView.setText(R.string.currency_pair_dummy);
         highPriceView.setText(R.string.high_price_dummy);
         lowPriceView.setText(R.string.low_price_dummy);
         volumeView.setText(R.string.volume_dummy);
-
-        FetchService.requestMarket(this, responseReceiver, MarketData.MT_GOX,
-                Currencies.BTC, Currencies.USD);
     }
 
-    /** Take data from MarketData object and update views.
+    /** Clean up after a refresh and display content.
      */
-    protected void completeRefresh()
+    protected void completeFetch()
     {
+        expectResultsBy = 0;
+        handler.removeCallbacks(timeout);
         try
         {
             unregisterReceiver(responseReceiver);
@@ -109,6 +179,13 @@ public class MarketDataActivity extends Activity
             // nor a way to check if a receiver is registered.
         }
 
+        displayData();
+    }
+
+    /** Populate views with instance data.
+     */
+    protected void displayData()
+    {
         if(errorString != null)
         {
             showError(errorString);
@@ -167,7 +244,7 @@ public class MarketDataActivity extends Activity
     {
         switch (item.getItemId()) {
             case R.id.refresh:
-                startRefresh();
+                startFetch();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -204,7 +281,7 @@ public class MarketDataActivity extends Activity
             {
                 errorString = getString(R.string.fetch_error_generic);
             }
-            completeRefresh();
+            completeFetch();
         }
     }
 }
