@@ -78,7 +78,7 @@ public class MarketDataActivityTest
 
         runTestOnUiThread(new Runnable() {
             public void run() {
-                activity.completeRefresh();
+                activity.completeFetch();
             }
         });
 
@@ -137,7 +137,7 @@ public class MarketDataActivityTest
 
         runTestOnUiThread(new Runnable() {
             public void run() {
-                activity.startRefresh();
+                activity.startFetch();
                 activity.responseReceiver.onReceive(activity, successIntent);
             }
         });
@@ -157,7 +157,7 @@ public class MarketDataActivityTest
 
         runTestOnUiThread(new Runnable() {
             public void run() {
-                activity.startRefresh();
+                activity.startFetch();
                 activity.responseReceiver.onReceive(activity, failureIntent);
             }
         });

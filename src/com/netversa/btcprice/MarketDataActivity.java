@@ -57,7 +57,7 @@ public class MarketDataActivity extends Activity
             public void run() {
                 errorString = getString(R.string.fetch_error_timed_out);
                 marketData = null;
-                completeRefresh();
+                completeFetch();
             }
         };
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -91,7 +91,7 @@ public class MarketDataActivity extends Activity
         // first time
         if(savedInstanceState == null)
         {
-            startRefresh();
+            startFetch();
         }
         else
         {
@@ -104,7 +104,7 @@ public class MarketDataActivity extends Activity
             // timeout as necessary
             else if(SystemClock.uptimeMillis() < expectResultsBy)
             {
-                resumeRefresh();
+                resumeFetch();
             }
             else
             {
@@ -115,29 +115,29 @@ public class MarketDataActivity extends Activity
 
     /** Start a fetch and sync the UI to it.
      */
-    protected void startRefresh()
+    protected void startFetch()
     {
-        initRefresh(false);
+        initFetch(false);
     }
 
     /** Resync the UI with a fetch in progress.
      */
-    protected void resumeRefresh()
+    protected void resumeFetch()
     {
-        initRefresh(true);
+        initFetch(true);
     }
 
     /** Tell the FetchService to get market data and hook into its response.
-     * This method is only called by startRefresh and resumeRefresh.
+     * This method is only called by startFetch and resumeFetch.
      * @param resuming a fetch is already underway so don't modify any state
      */
-    protected void initRefresh(boolean resuming)
+    protected void initFetch(boolean resuming)
     {
         if(!resuming)
         {
             errorString = null;
         }
-        displayRefreshIndicators();
+        displayFetchIndicators();
 
         FetchService.requestMarket(this, responseReceiver, MarketData.MT_GOX,
                 Currencies.BTC, Currencies.USD);
@@ -152,7 +152,7 @@ public class MarketDataActivity extends Activity
     
     /** Show the user that a refresh is underway.
      */
-    protected void displayRefreshIndicators()
+    protected void displayFetchIndicators()
     {
         showError(errorString);
 
@@ -165,7 +165,7 @@ public class MarketDataActivity extends Activity
 
     /** Clean up after a refresh and display content.
      */
-    protected void completeRefresh()
+    protected void completeFetch()
     {
         expectResultsBy = 0;
         handler.removeCallbacks(timeout);
@@ -244,7 +244,7 @@ public class MarketDataActivity extends Activity
     {
         switch (item.getItemId()) {
             case R.id.refresh:
-                startRefresh();
+                startFetch();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -281,7 +281,7 @@ public class MarketDataActivity extends Activity
             {
                 errorString = getString(R.string.fetch_error_generic);
             }
-            completeRefresh();
+            completeFetch();
         }
     }
 }
