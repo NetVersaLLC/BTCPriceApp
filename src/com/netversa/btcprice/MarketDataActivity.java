@@ -3,16 +3,12 @@
  */
 package com.netversa.btcprice;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
-import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -23,7 +19,7 @@ import com.xeiam.xchange.currency.Currencies;
 
 /** Simple activity to display and update prices on demand.
  */
-public class MarketDataActivity extends Activity
+public class MarketDataActivity extends BaseActivity
 {
     protected MarketData marketData;
     protected MarketData cachedMarketData;
@@ -35,7 +31,6 @@ public class MarketDataActivity extends Activity
 
     protected BroadcastReceiver responseReceiver;
     protected Handler handler;
-    protected SharedPreferences prefs;
 
     // views
     protected TextView errorView;
@@ -60,7 +55,6 @@ public class MarketDataActivity extends Activity
                 completeFetch();
             }
         };
-        prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         setContentView(R.layout.market_data_activity);
 
