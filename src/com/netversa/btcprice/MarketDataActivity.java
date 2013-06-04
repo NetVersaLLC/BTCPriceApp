@@ -104,14 +104,50 @@ public class MarketDataActivity extends Activity
             // timeout as necessary
             else if(SystemClock.uptimeMillis() < expectResultsBy)
             {
-                displayRefreshIndicators();
-                handler.postAtTime(timeout, expectResultsBy);
+                resumeRefresh();
             }
             else
             {
                 timeout.run();
             }
         }
+    }
+
+    /** Start a fetch and sync the UI to it.
+     */
+    protected void startRefresh()
+    {
+        initRefresh(false);
+    }
+
+    /** Resync the UI with a fetch in progress.
+     */
+    protected void resumeRefresh()
+    {
+        initRefresh(true);
+    }
+
+    /** Tell the FetchService to get market data and hook into its response.
+     * This method is only called by startRefresh and resumeRefresh.
+     * @param resuming a fetch is already underway so don't modify any state
+     */
+    protected void initRefresh(boolean resuming)
+    {
+        if(!resuming)
+        {
+            errorString = null;
+        }
+        displayRefreshIndicators();
+
+        FetchService.requestMarket(this, responseReceiver, MarketData.MT_GOX,
+                Currencies.BTC, Currencies.USD);
+
+        if(!resuming)
+        {
+            expectResultsBy = SystemClock.uptimeMillis() +
+                prefs.getLong("fetch_timeout", Defaults.FETCH_TIMEOUT);
+        }
+        handler.postAtTime(timeout, expectResultsBy);
     }
     
     /** Show the user that a refresh is underway.
@@ -127,19 +163,23 @@ public class MarketDataActivity extends Activity
         volumeView.setText(R.string.volume_dummy);
     }
 
-    /** Tell the FetchService to get market data and hook into its response.
+    /** Clean up after a refresh and display content.
      */
-    protected void startRefresh()
+    protected void completeRefresh()
     {
-        errorString = null;
-        displayRefreshIndicators();
+        expectResultsBy = 0;
+        handler.removeCallbacks(timeout);
+        try
+        {
+            unregisterReceiver(responseReceiver);
+        }
+        catch(IllegalArgumentException e)
+        {
+            // evidently Android doesn't have a way to unregister if necessary,
+            // nor a way to check if a receiver is registered.
+        }
 
-        FetchService.requestMarket(this, responseReceiver, MarketData.MT_GOX,
-                Currencies.BTC, Currencies.USD);
-
-        expectResultsBy = SystemClock.uptimeMillis() +
-            prefs.getLong("fetch_timeout", Defaults.FETCH_TIMEOUT);
-        handler.postAtTime(timeout, expectResultsBy);
+        displayData();
     }
 
     /** Populate views with instance data.
@@ -171,25 +211,6 @@ public class MarketDataActivity extends Activity
             volumeView.setText(String.format(getString(R.string.volume_format),
                         cachedMarketData.volume));
         }
-    }
-
-    /** Clean up after a refresh and display content.
-     */
-    protected void completeRefresh()
-    {
-        expectResultsBy = 0;
-        handler.removeCallbacks(timeout);
-        try
-        {
-            unregisterReceiver(responseReceiver);
-        }
-        catch(IllegalArgumentException e)
-        {
-            // evidently Android doesn't have a way to unregister if necessary,
-            // nor a way to check if a receiver is registered.
-        }
-
-        displayData();
     }
 
     /** Reveal the error view and show a message in it, or hide it.
