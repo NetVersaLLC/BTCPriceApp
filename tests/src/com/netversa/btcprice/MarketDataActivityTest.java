@@ -78,7 +78,7 @@ public class MarketDataActivityTest
 
         runTestOnUiThread(new Runnable() {
             public void run() {
-                activity.completeFetch();
+                activity.displayData();
             }
         });
 
