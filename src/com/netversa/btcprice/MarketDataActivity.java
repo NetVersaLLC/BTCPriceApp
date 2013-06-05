@@ -240,6 +240,10 @@ public class MarketDataActivity extends BaseActivity
             case R.id.refresh:
                 startFetch();
                 return true;
+            case R.id.notifications:
+                startActivity(new Intent().setClass(this,
+                            NotificationConfigActivity.class));
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }

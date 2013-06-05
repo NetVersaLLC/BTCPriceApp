@@ -24,4 +24,7 @@
     <string name="low_price_format" formatted="false">▼ %.2f</string>
     <string name="volume_dummy">Volume: ---</string>
     <string name="volume_format" formatted="false">Volume: %.0f</string>
+
+    <string name="notification_config_title">Notifications</string>
+    <string name="notification_config_menu">notifications</string>
 </resources>
