@@ -27,4 +27,9 @@
 
     <string name="notification_config_title">Notifications</string>
     <string name="notification_config_menu">notifications</string>
+
+    <!-- notification config prefs -->
+    <string name="pref_ongoing_price_category">Ongoing Price Monitor</string>
+    <string name="pref_ongoing_price_title">Always show current price</string>
+    <string name="pref_ongoing_price_summary">Keep the price in notifications all the time</string>
 </resources>
