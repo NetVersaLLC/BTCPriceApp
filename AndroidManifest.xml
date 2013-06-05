@@ -19,6 +19,12 @@
         android:icon="@drawable/launcher_icon"
         android:theme="@style/theme"
         >
+        <receiver android:name="OngoingPriceReceiver">
+            <intent-filter>
+                <action android:name="com.netversa.btcprice.ACTION_FETCH_RESPONSE"/>
+                <data android:scheme="data"/>
+            </intent-filter>
+        </receiver>
         <service android:name="FetchService">
             <intent-filter>
                 <action android:name="com.netversa.btcprice.ACTION_FETCH_REQUEST"/>
