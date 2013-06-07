@@ -14,9 +14,11 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.IBinder;
 import android.os.PatternMatcher;
+import android.preference.PreferenceManager;
 
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.ExchangeFactory;
@@ -57,18 +59,21 @@ public class FetchService extends Service
     // having a cache inside FetchService makes for easy dependency injection
     // for testing
     protected Map<String, Exchange> exchangeCache;
+    protected SharedPreferences prefs;
 
     public FetchService()
     {
         super();
         activeTargets = new ActiveTargetSet();
         exchangeCache = new ConcurrentHashMap<String, Exchange>();
+        prefs = null;
     }
 
     @Override
     public void onCreate()
     {
         super.onCreate();
+        prefs = PreferenceManager.getDefaultSharedPreferences(this);
     }
 
     @Override
@@ -244,6 +249,24 @@ public class FetchService extends Service
         }
 
         return context.startService(new Intent(ACTION_REQUEST, target));
+    }
+
+    /** Helper function to send a fetch request to this service with default
+     * choices and no local receiver.
+     */
+    public static ComponentName requestMarket(Context context)
+    {
+        SharedPreferences prefs =
+            PreferenceManager.getDefaultSharedPreferences(context);
+
+        String exchange = prefs.getString("exchange", Defaults.EXCHANGE);
+        String baseCurrency =
+            prefs.getString("base_currency", Defaults.BASE_CURRENCY);
+        String counterCurrency =
+            prefs.getString("counter_currency", Defaults.COUNTER_CURRENCY);
+
+        return requestMarket(context, null, exchange, baseCurrency,
+                counterCurrency);
     }
 
     /** Get the XChange exchange object corresponding to a name.  Also provides

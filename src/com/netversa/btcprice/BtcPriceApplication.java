@@ -22,7 +22,7 @@ public class BtcPriceApplication extends Application
         super.onCreate();
 
         defaultPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-        prefListener = new GlobalPrefListener();
+        prefListener = new GlobalPrefListener(this);
         defaultPrefs.registerOnSharedPreferenceChangeListener(prefListener);
     }
 }

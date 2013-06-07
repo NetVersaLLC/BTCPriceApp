@@ -51,7 +51,7 @@ public class OngoingPriceReceiver extends BroadcastReceiver
         }
 
         // build and show notification
-        NotificationManager notifications = (NotificationManager)
+        NotificationManager notifs = (NotificationManager)
             context.getSystemService(Context.NOTIFICATION_SERVICE);
         NotificationCompat.Builder builder =
             new NotificationCompat.Builder(context);
@@ -59,6 +59,6 @@ public class OngoingPriceReceiver extends BroadcastReceiver
                .setContentTitle("title")
                .setContentText("body")
                .setOngoing(true);
-        notifications.notify(NOTIF_ONGOING_PRICE, builder.build());
+        notifs.notify(NOTIF_ONGOING_PRICE, builder.build());
     }
 }
