@@ -53,11 +53,17 @@ public class OngoingPriceReceiver extends BroadcastReceiver
         // build and show notification
         NotificationManager notifs = (NotificationManager)
             context.getSystemService(Context.NOTIFICATION_SERVICE);
+        String valueString =
+            String.format(context.getString(R.string.price_format),
+                    data.lastPrice);
+        String currencyString =
+            String.format(context.getString(R.string.currency_pair_format),
+                    data.baseCurrency, data.counterCurrency);
         NotificationCompat.Builder builder =
             new NotificationCompat.Builder(context);
         builder.setSmallIcon(R.drawable.launcher_icon)
-               .setContentTitle("title")
-               .setContentText("body")
+               .setContentTitle(valueString)
+               .setContentText(currencyString)
                .setOngoing(true);
         notifs.notify(NOTIF_ONGOING_PRICE, builder.build());
     }
