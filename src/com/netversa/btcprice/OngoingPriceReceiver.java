@@ -20,6 +20,7 @@ import android.support.v4.app.NotificationCompat;
 public class OngoingPriceReceiver extends BroadcastReceiver
 {
     public static final int NOTIF_ONGOING_PRICE = 1000000;
+
     @Override
     public void onReceive(Context context, Intent intent)
     {
@@ -74,5 +75,18 @@ public class OngoingPriceReceiver extends BroadcastReceiver
                .setOngoing(true)
                .setContentIntent(notifIntent);
         notifs.notify(NOTIF_ONGOING_PRICE, builder.build());
+    }
+
+    public static void onStart(Context context)
+    {
+        FetchService.requestMarket(context);
+    }
+
+    public static void onStop(Context context)
+    {
+        NotificationManager notifs = (NotificationManager)
+            context.getSystemService(Context.NOTIFICATION_SERVICE);
+
+        notifs.cancel(NOTIF_ONGOING_PRICE);
     }
 }

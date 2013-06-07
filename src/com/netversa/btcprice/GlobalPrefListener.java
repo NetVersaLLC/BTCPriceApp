@@ -3,7 +3,6 @@
  */
 package com.netversa.btcprice;
 
-import android.app.NotificationManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 
@@ -14,13 +13,10 @@ public class GlobalPrefListener
     implements SharedPreferences.OnSharedPreferenceChangeListener
 {
     protected Context ctx;
-    protected NotificationManager notifs;
 
     public GlobalPrefListener(Context context)
     {
         ctx = context;
-        notifs = (NotificationManager)
-            context.getSystemService(Context.NOTIFICATION_SERVICE);
     }
 
     @Override
@@ -30,11 +26,11 @@ public class GlobalPrefListener
         {
             if(prefs.getBoolean(key, Defaults.ONGOING_PRICE))
             {
-                FetchService.requestMarket(ctx);
+                OngoingPriceReceiver.onStart(ctx);
             }
             else
             {
-                notifs.cancel(OngoingPriceReceiver.NOTIF_ONGOING_PRICE);
+                OngoingPriceReceiver.onStop(ctx);
             }
         }
     }
