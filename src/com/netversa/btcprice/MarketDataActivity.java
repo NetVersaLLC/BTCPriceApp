@@ -133,7 +133,7 @@ public class MarketDataActivity extends BaseActivity
         }
         displayFetchIndicators();
 
-        FetchService.requestMarket(this, responseReceiver, MarketData.MT_GOX,
+        FetchService.requestMarket(this, responseReceiver, Exchanges.MT_GOX,
                 Currencies.BTC, Currencies.USD);
 
         if(!resuming)

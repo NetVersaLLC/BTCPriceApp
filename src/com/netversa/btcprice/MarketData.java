@@ -13,8 +13,6 @@ import android.os.Parcelable;
  */
 public class MarketData implements Parcelable
 {
-    public static final String MT_GOX = "mtgox";
-
     public final String exchangeName;
 
     public final String baseCurrency;

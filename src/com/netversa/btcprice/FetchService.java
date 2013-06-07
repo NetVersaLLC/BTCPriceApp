@@ -280,7 +280,7 @@ public class FetchService extends Service
             return output;
         }
 
-        if(MarketData.MT_GOX.equalsIgnoreCase(exchangeName))
+        if(Exchanges.MT_GOX.equalsIgnoreCase(exchangeName))
         {
             output = ExchangeFactory.INSTANCE.createExchange(
                     MtGoxExchange.class.getName());

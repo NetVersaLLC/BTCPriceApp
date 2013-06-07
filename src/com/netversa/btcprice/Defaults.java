@@ -9,7 +9,7 @@ import com.xeiam.xchange.currency.Currencies;
  */
 public class Defaults
 {
-    public static final String EXCHANGE = MarketData.MT_GOX;
+    public static final String EXCHANGE = Exchanges.MT_GOX;
     public static final String BASE_CURRENCY = Currencies.BTC;
     public static final String COUNTER_CURRENCY = Currencies.USD;
     // 30 seconds in ms
