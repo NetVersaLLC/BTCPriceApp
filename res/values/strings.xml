@@ -5,6 +5,8 @@
 <resources>
     <string name="app_name">BTC Price</string>
 
+    <string name="mtgox">Mt. Gox</string>
+
     <string name="fetch_error_generic">update failed</string>
     <string name="fetch_error_bad_target_format" formatted="false">invalid target \'%s\'</string>
     <string name="fetch_error_wrong_arity_format" formatted="false">action \'%s\' requires %d arguments</string>
@@ -24,6 +26,9 @@
     <string name="low_price_format" formatted="false">▼ %.2f</string>
     <string name="volume_dummy">Volume: ---</string>
     <string name="volume_format" formatted="false">Volume: %.0f</string>
+
+    <string name="ongoing_price_format" formatted="false">%.2f %s</string>
+    <string name="ongoing_currency_format" formatted="false">%s %s</string>
 
     <string name="notification_config_title">Notifications</string>
     <string name="notification_config_menu">notifications</string>

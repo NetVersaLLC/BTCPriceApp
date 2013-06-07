@@ -56,12 +56,14 @@ public class OngoingPriceReceiver extends BroadcastReceiver
         NotificationManager notifs = (NotificationManager)
             context.getSystemService(Context.NOTIFICATION_SERVICE);
 
+        String exchangeLabel =
+            Exchanges.instance().label(context, data.exchangeName);
         String valueString =
-            String.format(context.getString(R.string.price_format),
-                    data.lastPrice);
+            String.format(context.getString(R.string.ongoing_price_format),
+                    data.lastPrice, data.counterCurrency);
         String currencyString =
-            String.format(context.getString(R.string.currency_pair_format),
-                    data.baseCurrency, data.counterCurrency);
+            String.format(context.getString(R.string.ongoing_currency_format),
+                    exchangeLabel, data.baseCurrency);
 
         PendingIntent notifIntent = PendingIntent.getActivity(context, 0,
                 context.getPackageManager().getLaunchIntentForPackage(
