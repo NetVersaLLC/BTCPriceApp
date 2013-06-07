@@ -68,7 +68,7 @@ public class OngoingPriceReceiver extends BroadcastReceiver
 
         NotificationCompat.Builder builder =
             new NotificationCompat.Builder(context);
-        builder.setSmallIcon(R.drawable.launcher_icon)
+        builder.setSmallIcon(R.drawable.ongoing_price_icon)
                .setContentTitle(valueString)
                .setContentText(currencyString)
                .setOngoing(true)
