@@ -5,6 +5,7 @@ package com.netversa.btcprice;
 
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -53,18 +54,25 @@ public class OngoingPriceReceiver extends BroadcastReceiver
         // build and show notification
         NotificationManager notifs = (NotificationManager)
             context.getSystemService(Context.NOTIFICATION_SERVICE);
+
         String valueString =
             String.format(context.getString(R.string.price_format),
                     data.lastPrice);
         String currencyString =
             String.format(context.getString(R.string.currency_pair_format),
                     data.baseCurrency, data.counterCurrency);
+
+        PendingIntent notifIntent = PendingIntent.getActivity(context, 0,
+                context.getPackageManager().getLaunchIntentForPackage(
+                    "com.netversa.btcprice"), 0);
+
         NotificationCompat.Builder builder =
             new NotificationCompat.Builder(context);
         builder.setSmallIcon(R.drawable.launcher_icon)
                .setContentTitle(valueString)
                .setContentText(currencyString)
-               .setOngoing(true);
+               .setOngoing(true)
+               .setContentIntent(notifIntent);
         notifs.notify(NOTIF_ONGOING_PRICE, builder.build());
     }
 }
