@@ -51,6 +51,11 @@ public class OngoingPriceReceiver extends BroadcastReceiver
         {
             return;
         }
+        // does the system handle the chosen exchange?
+        if(!Exchanges.instance().known(data.exchangeName))
+        {
+            return;
+        }
 
         // build and show notification
         NotificationManager notifs = (NotificationManager)
