@@ -119,7 +119,7 @@ public class MarketDataActivityTest
         startActivity(new Intent(), null, null);
         activity = getActivity();
 
-        Uri target = FetchService.marketTarget(MarketData.MT_GOX,
+        Uri target = FetchService.marketTarget(Exchanges.MT_GOX,
                 Currencies.BTC, Currencies.USD);
 
         IntentFilter filter = new IntentFilter(FetchService.ACTION_RESPONSE);
