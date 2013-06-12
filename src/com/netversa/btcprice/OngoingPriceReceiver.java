@@ -20,6 +20,12 @@ import android.support.v4.app.NotificationCompat;
 public class OngoingPriceReceiver extends BroadcastReceiver
 {
     public static final int NOTIF_ONGOING_PRICE = 1000000;
+    private NotificationCompat.Builder notifBuilder;
+
+    public OngoingPriceReceiver()
+    {
+        notifBuilder = null;
+    }
 
     @Override
     public void onReceive(Context context, Intent intent)
@@ -74,14 +80,21 @@ public class OngoingPriceReceiver extends BroadcastReceiver
                 context.getPackageManager().getLaunchIntentForPackage(
                     "com.netversa.btcprice"), 0);
 
-        NotificationCompat.Builder builder =
-            new NotificationCompat.Builder(context);
-        builder.setSmallIcon(R.drawable.ongoing_price_icon)
+        if(notifBuilder == null)
+        {
+            notifBuilder = new NotificationCompat.Builder(context);
+        }
+        notifBuilder.setSmallIcon(R.drawable.ongoing_price_icon)
                .setContentTitle(valueString)
                .setContentText(currencyString)
                .setOngoing(true)
                .setContentIntent(notifIntent);
-        notifs.notify(NOTIF_ONGOING_PRICE, builder.build());
+        notifs.notify(NOTIF_ONGOING_PRICE, notifBuilder.build());
+    }
+
+    public void setNotificationBuilder(NotificationCompat.Builder builder)
+    {
+        notifBuilder = builder;
     }
 
     public static void onStart(Context context)
