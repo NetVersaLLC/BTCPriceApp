@@ -116,15 +116,15 @@ public class OngoingPriceReceiverTest extends AndroidTestCase
         @Override
         public String getString(String key, String defValue)
         {
-            if("exchange".equals(key))
+            if("def_exchange".equals(key))
             {
                 return defaultExchange;
             }
-            else if("base_currency".equals(key))
+            else if("def_base".equals(key))
             {
                 return defaultBase;
             }
-            else if("counter_currency".equals(key))
+            else if("def_counter".equals(key))
             {
                 return defaultCounter;
             }

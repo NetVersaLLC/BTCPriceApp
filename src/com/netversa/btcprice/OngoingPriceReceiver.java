@@ -48,12 +48,12 @@ public class OngoingPriceReceiver extends BroadcastReceiver
         }
         // is the market data for the appropriate exchange and currencies?
         if(!data.exchangeName.equals(
-                    prefs.getString("exchange", Defaults.EXCHANGE)) ||
+                    prefs.getString("def_exchange", Defaults.DEF_EXCHANGE)) ||
                 !data.baseCurrency.equals(
-                    prefs.getString("base_currency", Defaults.BASE_CURRENCY)) ||
+                    prefs.getString("def_base", Defaults.DEF_BASE)) ||
                 !data.counterCurrency.equals(
-                    prefs.getString("counter_currency",
-                        Defaults.COUNTER_CURRENCY)))
+                    prefs.getString("def_counter",
+                        Defaults.DEF_COUNTER)))
         {
             return;
         }
