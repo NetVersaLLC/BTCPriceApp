@@ -259,11 +259,11 @@ public class FetchService extends Service
         SharedPreferences prefs =
             PreferenceManager.getDefaultSharedPreferences(context);
 
-        String exchange = prefs.getString("exchange", Defaults.EXCHANGE);
+        String exchange = prefs.getString("def_exchange", Defaults.DEF_EXCHANGE);
         String baseCurrency =
-            prefs.getString("base_currency", Defaults.BASE_CURRENCY);
+            prefs.getString("def_base", Defaults.DEF_BASE);
         String counterCurrency =
-            prefs.getString("counter_currency", Defaults.COUNTER_CURRENCY);
+            prefs.getString("def_counter", Defaults.DEF_COUNTER);
 
         return requestMarket(context, null, exchange, baseCurrency,
                 counterCurrency);

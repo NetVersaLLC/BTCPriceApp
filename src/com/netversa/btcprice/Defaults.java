@@ -9,9 +9,9 @@ import com.xeiam.xchange.currency.Currencies;
  */
 public class Defaults
 {
-    public static final String EXCHANGE = Exchanges.MT_GOX;
-    public static final String BASE_CURRENCY = Currencies.BTC;
-    public static final String COUNTER_CURRENCY = Currencies.USD;
+    public static final String DEF_EXCHANGE = Exchanges.MT_GOX;
+    public static final String DEF_BASE = Currencies.BTC;
+    public static final String DEF_COUNTER = Currencies.USD;
     // 30 seconds in ms
     public static final long FETCH_TIMEOUT = 30000;
     public static final boolean ONGOING_PRICE = false;
