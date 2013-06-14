@@ -19,5 +19,6 @@ public class Defaults
     public static final long LAST_FETCH = 0;
     // _FETCH_INTERVAL covers an arbitrary number of prefs relating to
     // service frequencies
-    public static final long _FETCH_INTERVAL = 0;
+    public static final long _FETCH_INTERVAL = 1000l * 60l * 60l;
+    public static final boolean _FETCH_ENABLED = false;
 }

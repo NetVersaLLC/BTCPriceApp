@@ -16,5 +16,7 @@ public class StartAtBootReceiver extends BroadcastReceiver
     @Override
     public void onReceive(Context context, Intent intent)
     {
+        // start up background services if necessary
+        CommonFetchScheduler.instance().rescheduleFetches(context);
     }
 }

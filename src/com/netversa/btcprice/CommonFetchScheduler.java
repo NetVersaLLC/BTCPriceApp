@@ -7,8 +7,13 @@ import java.math.BigInteger;
 import java.util.HashSet;
 import java.util.Set;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
+import android.os.SystemClock;
 import android.preference.PreferenceManager;
 
 /** Determine when next to fetch data automatically.  If a user want's an
@@ -24,16 +29,19 @@ public class CommonFetchScheduler
 
     // set of all sharedpreference keys that contain scheduling requirements of
     // background services
-    private Set<String> schedReqPrefs;
+    private Set<SchedPrefs> schedReqPrefs;
+    private PendingIntent activeCallback;
 
     private CommonFetchScheduler()
     {
-        schedReqPrefs = new HashSet<String>();
+        activeCallback = null;
+        schedReqPrefs = new HashSet<SchedPrefs>();
 
-        // INSERT SERVICE REQUIREMENT PREFS
+        schedReqPrefs.add(new SchedPrefs("ongoing_price",
+                    "ongoing_price_interval"));
     }
 
-    public CommonFetchScheduler instance()
+    public static CommonFetchScheduler instance()
     {
         if(singleton == null)
         {
@@ -43,23 +51,24 @@ public class CommonFetchScheduler
         return singleton;
     }
 
-    /** Select a time for the next common fetch.
-     * @return milliseconds since system boot at which to run the next fetch,
-     * or zero if no fetch is necessary.
+    /** Select an interval for common fetches.
+     * @return milliseconds preferred delay between fetches or zero if no fetch
+     * is necessary.
      */
-    public long planNextFetch(Context context)
+    public long getFetchInterval(Context context)
     {
         SharedPreferences prefs =
             PreferenceManager.getDefaultSharedPreferences(context);
 
-        long lastFetch = prefs.getLong("last_fetch", Defaults.LAST_FETCH);
-
         BigInteger bestInterval = BigInteger.valueOf(0);
 
-        for(String ee : schedReqPrefs)
+        for(SchedPrefs ee : schedReqPrefs)
         {
-            long interval = prefs.getLong(ee, Defaults._FETCH_INTERVAL);
-            if(interval == 0)
+            boolean enabled = prefs.getBoolean(ee.enabled,
+                    Defaults._FETCH_ENABLED);
+            long interval = prefs.getLong(ee.interval,
+                    Defaults._FETCH_INTERVAL);
+            if(!enabled || interval == 0)
             {
                 continue;
             }
@@ -72,13 +81,89 @@ public class CommonFetchScheduler
             bestInterval = bestInterval.gcd(BigInteger.valueOf(interval));
         }
 
-        long result = bestInterval.longValue();
-        if(result == 0)
+        return bestInterval.longValue();
+    }
+
+    /** Select a time for the next common fetch.
+     * @return milliseconds since system boot at which to run the next fetch,
+     * or zero if no fetch is necessary.
+     */
+    public long planNextFetch(Context context)
+    {
+        long interval = getFetchInterval(context);
+        if(interval == 0)
         {
             return 0;
         }
-        result += lastFetch;
+        SharedPreferences prefs =
+            PreferenceManager.getDefaultSharedPreferences(context);
 
-        return result;
+        long lastFetch = prefs.getLong("last_fetch", Defaults.LAST_FETCH);
+
+        return lastFetch + interval;
+    }
+
+    /** Register common fetch callbacks with Android, clearing any currently
+     * registered callbacks.
+     */
+    public void rescheduleFetches(Context context)
+    {
+        AlarmManager scheduler = (AlarmManager)
+            context.getSystemService(Context.ALARM_SERVICE);
+
+        if(activeCallback != null)
+        {
+            scheduler.cancel(activeCallback);
+        }
+
+        long interval = getFetchInterval(context);
+        if(interval == 0)
+        {
+            return;
+        }
+
+        PendingIntent callback = getCallback(context);
+        activeCallback = callback;
+
+        scheduler.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                SystemClock.elapsedRealtime() + interval, interval, callback);
+    }
+
+    /** Return the PendingIntent that is registered with Android to be called
+     * periodically for common fetches.
+     */
+    public PendingIntent getCallback(Context context)
+    {
+        SharedPreferences prefs =
+            PreferenceManager.getDefaultSharedPreferences(context);
+
+        String exchangeName = prefs.getString("def_exchange",
+                Defaults.DEF_EXCHANGE);
+        String baseCurrency = prefs.getString("def_base",
+                Defaults.DEF_BASE);
+        String counterCurrency = prefs.getString("def_counter",
+                Defaults.DEF_COUNTER);
+
+        Uri target = FetchService.marketTarget(exchangeName, baseCurrency,
+                counterCurrency);
+
+        Intent intent = new Intent(FetchService.ACTION_REQUEST, target);
+
+        PendingIntent pendIntent = PendingIntent.getService(context, 0, intent,
+                0);
+
+        return pendIntent;
+    }
+
+    public static class SchedPrefs
+    {
+        public String enabled;
+        public String interval;
+
+        public SchedPrefs(String enabled_, String interval_)
+        {
+            enabled = enabled_;
+            interval = interval_;
+        }
     }
 }
