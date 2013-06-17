@@ -31,8 +31,8 @@ public class OngoingPriceReceiverTest extends AndroidTestCase
     {
         super();
 
-        marketData = new MarketData(BasicTestPrefs.defaultExchange,
-                BasicTestPrefs.defaultBase, BasicTestPrefs.defaultCounter,
+        marketData = new MarketData(BasicTestPrefs.def_exchange,
+                BasicTestPrefs.def_base, BasicTestPrefs.def_counter,
                 new BigDecimal("1.00"), new BigDecimal("0.99"),
                 new BigDecimal("1.01"), new BigDecimal("1.99"),
                 new BigDecimal("0.01"), new BigDecimal("100.00"),
@@ -60,8 +60,8 @@ public class OngoingPriceReceiverTest extends AndroidTestCase
 
     public void testGoodIntent() throws Throwable
     {
-        Uri target = FetchService.marketTarget(BasicTestPrefs.defaultExchange,
-                BasicTestPrefs.defaultBase, BasicTestPrefs.defaultCounter);
+        Uri target = FetchService.marketTarget(BasicTestPrefs.def_exchange,
+                BasicTestPrefs.def_base, BasicTestPrefs.def_counter);
         Intent goodIntent = new Intent(FetchService.ACTION_RESPONSE, target);
         goodIntent.putExtra(FetchService.EXTRA_MARKET_DATA,
                 marketData);
@@ -77,12 +77,12 @@ public class OngoingPriceReceiverTest extends AndroidTestCase
 
     public void testBadExchange() throws Throwable
     {
-        Uri target = FetchService.marketTarget(BasicTestPrefs.defaultExchange,
-                BasicTestPrefs.defaultBase, BasicTestPrefs.defaultCounter);
+        Uri target = FetchService.marketTarget(BasicTestPrefs.def_exchange,
+                BasicTestPrefs.def_base, BasicTestPrefs.def_counter);
         Intent badIntent = new Intent(FetchService.ACTION_RESPONSE, target);
         badIntent.putExtra(FetchService.EXTRA_MARKET_DATA,
-                new MarketData(null, BasicTestPrefs.defaultBase,
-                    BasicTestPrefs.defaultCounter,
+                new MarketData(null, BasicTestPrefs.def_base,
+                    BasicTestPrefs.def_counter,
                     new BigDecimal("1.00"), new BigDecimal("0.99"),
                     new BigDecimal("1.01"), new BigDecimal("1.99"),
                     new BigDecimal("0.01"), new BigDecimal("100.00"),
