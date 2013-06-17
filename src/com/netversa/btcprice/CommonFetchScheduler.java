@@ -3,7 +3,6 @@
  */
 package com.netversa.btcprice;
 
-import java.math.BigInteger;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -60,7 +59,7 @@ public class CommonFetchScheduler
         SharedPreferences prefs =
             PreferenceManager.getDefaultSharedPreferences(context);
 
-        BigInteger bestInterval = BigInteger.valueOf(0);
+        long bestInterval = 0;
 
         for(SchedPrefs ee : schedReqPrefs)
         {
@@ -72,16 +71,16 @@ public class CommonFetchScheduler
             {
                 continue;
             }
-            if(bestInterval.longValue() == 0)
+            if(bestInterval == 0)
             {
-                bestInterval = BigInteger.valueOf(interval);
+                bestInterval = interval;
                 continue;
             }
 
-            bestInterval = bestInterval.gcd(BigInteger.valueOf(interval));
+            bestInterval = Math.min(bestInterval, interval);
         }
 
-        return bestInterval.longValue();
+        return bestInterval;
     }
 
     /** Select a time for the next common fetch.
