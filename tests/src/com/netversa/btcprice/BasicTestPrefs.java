@@ -11,6 +11,8 @@ public class BasicTestPrefs extends MockSharedPreferences
     public static final String def_base = Currencies.BTC;
     public static final String def_counter = Currencies.USD;
 
+    public static final long ongoing_price_interval = 15l * 1000l;
+
     @Override
     public boolean getBoolean(String key, boolean defValue)
     {
@@ -36,6 +38,17 @@ public class BasicTestPrefs extends MockSharedPreferences
         else if("def_counter".equals(key))
         {
             return def_counter;
+        }
+
+        throw new IllegalArgumentException();
+    }
+
+    @Override
+    public long getLong(String key, long defValue)
+    {
+        if("ongoing_price_interval".equals(key))
+        {
+            return ongoing_price_interval;
         }
 
         throw new IllegalArgumentException();
