@@ -97,7 +97,8 @@ public class CommonFetchScheduler
         SharedPreferences prefs =
             PreferenceManager.getDefaultSharedPreferences(context);
 
-        long lastFetch = prefs.getLong("last_fetch", Defaults.LAST_FETCH);
+        long lastFetch = prefs.getLong("last_common_fetch",
+                Defaults.LAST_COMMON_FETCH);
 
         return lastFetch + interval;
     }
@@ -147,6 +148,7 @@ public class CommonFetchScheduler
                 counterCurrency);
 
         Intent intent = new Intent(FetchService.ACTION_REQUEST, target);
+        intent.putExtra(FetchService.EXTRA_COMMON_FETCH, true);
 
         PendingIntent pendIntent = PendingIntent.getService(context, 0, intent,
                 0);

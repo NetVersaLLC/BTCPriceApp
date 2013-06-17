@@ -16,7 +16,7 @@ public class Defaults
     public static final long FETCH_TIMEOUT = 30000;
     public static final boolean ONGOING_PRICE = false;
 
-    public static final long LAST_FETCH = 0;
+    public static final long LAST_COMMON_FETCH = 0;
     // _FETCH_INTERVAL covers an arbitrary number of prefs relating to
     // service frequencies
     public static final long _FETCH_INTERVAL = 1000l * 60l * 60l;

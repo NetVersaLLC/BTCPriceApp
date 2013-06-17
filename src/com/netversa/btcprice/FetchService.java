@@ -18,6 +18,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.IBinder;
 import android.os.PatternMatcher;
+import android.os.SystemClock;
 import android.preference.PreferenceManager;
 
 import com.xeiam.xchange.Exchange;
@@ -48,6 +49,8 @@ public class FetchService extends Service
         "com.netversa.btcprice.EXTRA_MARKET_DATA";
     public static final String EXTRA_ERROR_STRING =
         "com.netversa.btcprice.EXTRA_ERROR_STRING";
+    public static final String EXTRA_COMMON_FETCH =
+        "com.netversa.btcprice.EXTRA_COMMON_FETCH";
 
     public static final String DATA_SCHEME = "data";
     public static final String MARKET_DATA_ACTION = "market";
@@ -80,6 +83,12 @@ public class FetchService extends Service
     public int onStartCommand(Intent intent, int flags, int startId)
     {
         Uri target = intent.getData();
+        if(intent.getBooleanExtra(EXTRA_COMMON_FETCH, false))
+        {
+            prefs.edit()
+                .putLong("last_common_fetch", SystemClock.elapsedRealtime())
+                .commit();
+        }
         new Thread(new FetchRunnable(target)).start();
         return START_REDELIVER_INTENT;
     }
