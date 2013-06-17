@@ -16,7 +16,7 @@ import android.net.Uri;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
 
-/** Determine when next to fetch data automatically.  If a user want's an
+/** Determine when next to fetch data automatically.  If a user wants an
  * ongoing price notification updated at least every hour, and price swings
  * checked for at least every fifteen minutes, background data fetches will be
  * scheduled every fifteen minutes.  This class is interacted with whenever a
@@ -88,7 +88,7 @@ public class CommonFetchScheduler
      * @return milliseconds since system boot at which to run the next fetch,
      * or zero if no fetch is necessary.
      */
-    public long planNextFetch(Context context)
+    public long getNextFetchTime(Context context)
     {
         long interval = getFetchInterval(context);
         if(interval == 0)
