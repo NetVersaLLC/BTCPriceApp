@@ -21,23 +21,18 @@ import android.support.v4.app.NotificationCompat;
 import android.test.AndroidTestCase;
 import android.test.mock.MockContext;
 
-import com.xeiam.xchange.currency.Currencies;
-
 public class OngoingPriceReceiverTest extends AndroidTestCase
 {
     private OngoingPriceReceiver receiver;
     private MarketData marketData;
     private NotificationManager notifs;
-    public static final String defaultExchange = Exchanges.MT_GOX;
-    public static final String defaultBase = Currencies.BTC;
-    public static final String defaultCounter = Currencies.USD;
 
     public OngoingPriceReceiverTest()
     {
         super();
 
-        marketData = new MarketData(defaultExchange, defaultBase,
-                defaultCounter,
+        marketData = new MarketData(BasicTestPrefs.defaultExchange,
+                BasicTestPrefs.defaultBase, BasicTestPrefs.defaultCounter,
                 new BigDecimal("1.00"), new BigDecimal("0.99"),
                 new BigDecimal("1.01"), new BigDecimal("1.99"),
                 new BigDecimal("0.01"), new BigDecimal("100.00"),
@@ -65,8 +60,8 @@ public class OngoingPriceReceiverTest extends AndroidTestCase
 
     public void testGoodIntent() throws Throwable
     {
-        Uri target = FetchService.marketTarget(defaultExchange, defaultBase,
-                defaultCounter);
+        Uri target = FetchService.marketTarget(BasicTestPrefs.defaultExchange,
+                BasicTestPrefs.defaultBase, BasicTestPrefs.defaultCounter);
         Intent goodIntent = new Intent(FetchService.ACTION_RESPONSE, target);
         goodIntent.putExtra(FetchService.EXTRA_MARKET_DATA,
                 marketData);
@@ -82,12 +77,12 @@ public class OngoingPriceReceiverTest extends AndroidTestCase
 
     public void testBadExchange() throws Throwable
     {
-        Uri target = FetchService.marketTarget(defaultExchange, defaultBase,
-                defaultCounter);
+        Uri target = FetchService.marketTarget(BasicTestPrefs.defaultExchange,
+                BasicTestPrefs.defaultBase, BasicTestPrefs.defaultCounter);
         Intent badIntent = new Intent(FetchService.ACTION_RESPONSE, target);
         badIntent.putExtra(FetchService.EXTRA_MARKET_DATA,
-                new MarketData(null, defaultBase,
-                    defaultCounter,
+                new MarketData(null, BasicTestPrefs.defaultBase,
+                    BasicTestPrefs.defaultCounter,
                     new BigDecimal("1.00"), new BigDecimal("0.99"),
                     new BigDecimal("1.01"), new BigDecimal("1.99"),
                     new BigDecimal("0.01"), new BigDecimal("100.00"),
@@ -98,39 +93,6 @@ public class OngoingPriceReceiverTest extends AndroidTestCase
         receiver.setNotificationBuilder(builder);
 
         receiver.onReceive(getContext(), badIntent);
-    }
-
-    private class ExpectedPrefs extends MockSharedPreferences
-    {
-        @Override
-        public boolean getBoolean(String key, boolean defValue)
-        {
-            if("ongoing_price".equals(key))
-            {
-                return true;
-            }
-
-            throw new IllegalArgumentException();
-        }
-
-        @Override
-        public String getString(String key, String defValue)
-        {
-            if("def_exchange".equals(key))
-            {
-                return defaultExchange;
-            }
-            else if("def_base".equals(key))
-            {
-                return defaultBase;
-            }
-            else if("def_counter".equals(key))
-            {
-                return defaultCounter;
-            }
-
-            throw new IllegalArgumentException();
-        }
     }
 
     private class InjectorContext extends MockContext
@@ -157,7 +119,7 @@ public class OngoingPriceReceiverTest extends AndroidTestCase
         @Override
         public SharedPreferences getSharedPreferences(String name, int mode)
         {
-            return new ExpectedPrefs();
+            return new BasicTestPrefs();
         }
 
         @Override
