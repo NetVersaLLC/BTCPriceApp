@@ -133,8 +133,10 @@ public class MarketDataActivity extends BaseActivity
         }
         displayFetchIndicators();
 
-        FetchService.requestMarket(this, responseReceiver, Exchanges.MT_GOX,
-                Currencies.BTC, Currencies.USD);
+        FetchService.requestMarket(this, responseReceiver,
+                prefs.getString("def_exchange", Defaults.DEF_EXCHANGE),
+                prefs.getString("def_base", Defaults.DEF_BASE),
+                prefs.getString("def_counter", Defaults.DEF_COUNTER));
 
         if(!resuming)
         {
