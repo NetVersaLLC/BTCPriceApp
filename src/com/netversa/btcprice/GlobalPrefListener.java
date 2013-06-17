@@ -32,7 +32,7 @@ public class GlobalPrefListener
             {
                 OngoingPriceReceiver.onStop(ctx);
             }
-            CommonFetchScheduler.instance().rescheduleFetches(ctx);
+            FetchScheduler.instance().reschedule(ctx);
         }
     }
 }

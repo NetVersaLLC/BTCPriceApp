@@ -19,19 +19,19 @@ import android.preference.PreferenceManager;
  * ongoing price notification updated at least every hour, and price swings
  * checked for at least every fifteen minutes, background data fetches will be
  * scheduled every fifteen minutes.  This class is interacted with whenever a
- * common fetch runs and whenever settings relating to the frequency of
+ * scheduled fetch runs and whenever settings relating to the frequency of
  * background services are changed.
  */
-public class CommonFetchScheduler
+public class FetchScheduler
 {
-    private static CommonFetchScheduler singleton;
+    private static FetchScheduler singleton;
 
     // set of all sharedpreference keys that contain scheduling requirements of
     // background services
     private Set<SchedPrefs> schedReqPrefs;
     private PendingIntent activeCallback;
 
-    private CommonFetchScheduler()
+    private FetchScheduler()
     {
         activeCallback = null;
         schedReqPrefs = new HashSet<SchedPrefs>();
@@ -40,17 +40,17 @@ public class CommonFetchScheduler
                     "ongoing_price_interval"));
     }
 
-    public static CommonFetchScheduler instance()
+    public static FetchScheduler instance()
     {
         if(singleton == null)
         {
-            singleton = new CommonFetchScheduler();
+            singleton = new FetchScheduler();
         }
 
         return singleton;
     }
 
-    /** Select an interval for common fetches.
+    /** Select an interval for background fetches.
      * @return milliseconds preferred delay between fetches or zero if no fetch
      * is necessary.
      */
@@ -83,7 +83,7 @@ public class CommonFetchScheduler
         return bestInterval;
     }
 
-    /** Select a time for the next common fetch.
+    /** Select a time for the next scheduled fetch.
      * @return milliseconds since system boot at which to run the next fetch,
      * or zero if no fetch is necessary.
      */
@@ -97,16 +97,16 @@ public class CommonFetchScheduler
         SharedPreferences prefs =
             PreferenceManager.getDefaultSharedPreferences(context);
 
-        long lastFetch = prefs.getLong("last_common_fetch",
-                Defaults.LAST_COMMON_FETCH);
+        long lastFetch = prefs.getLong("last_sched_fetch",
+                Defaults.LAST_SCHED_FETCH);
 
         return lastFetch + interval;
     }
 
-    /** Register common fetch callbacks with Android, clearing any currently
+    /** Register scheduled fetch callbacks with Android, clearing any currently
      * registered callbacks.
      */
-    public void rescheduleFetches(Context context)
+    public void reschedule(Context context)
     {
         AlarmManager scheduler = (AlarmManager)
             context.getSystemService(Context.ALARM_SERVICE);
@@ -130,7 +130,7 @@ public class CommonFetchScheduler
     }
 
     /** Return the PendingIntent that is registered with Android to be called
-     * periodically for common fetches.
+     * periodically for scheduled fetches.
      */
     public PendingIntent getCallback(Context context)
     {
@@ -148,7 +148,7 @@ public class CommonFetchScheduler
                 counterCurrency);
 
         Intent intent = new Intent(FetchService.ACTION_REQUEST, target);
-        intent.putExtra(FetchService.EXTRA_COMMON_FETCH, true);
+        intent.putExtra(FetchService.EXTRA_SCHED_FETCH, true);
 
         PendingIntent pendIntent = PendingIntent.getService(context, 0, intent,
                 0);
