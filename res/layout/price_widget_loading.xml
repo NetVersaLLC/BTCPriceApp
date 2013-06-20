@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright 2013 NetVersa LLC
+-->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/price_widget_layout"
+    >
+    <ImageView
+        style="@style/price_widget_load_emblem"
+        android:src="@drawable/launcher_icon"
+        />
+</LinearLayout>
