@@ -8,6 +8,6 @@
     >
     <TextView
         style="@style/price_widget_price"
-        android:text="Over $9000"
+        android:text="@string/price_dummy"
         />
 </RelativeLayout>
