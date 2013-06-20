@@ -3,6 +3,7 @@
  */
 package com.netversa.btcprice;
 
+import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -70,6 +71,12 @@ public class WidgetUpdateReceiver extends BroadcastReceiver
             widgetViews.setTextViewText(R.id.price, priceText);
             widgetViews.setTextViewText(R.id.currency, currencyText);
             widgetViews.setTextViewText(R.id.exchange, exchangeText);
+
+            PendingIntent wIntent = PendingIntent.getActivity(context, 0,
+                    context.getPackageManager().getLaunchIntentForPackage(
+                        context.getPackageName()), 0);
+
+            widgetViews.setOnClickPendingIntent(R.id.widget, wIntent);
 
             wManager.updateAppWidget(widgetId, widgetViews);
         }
