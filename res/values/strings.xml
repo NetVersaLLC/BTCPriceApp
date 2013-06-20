@@ -18,6 +18,8 @@
 
     <string name="price_dummy">--.--</string>
     <string name="price_format" formatted="false">%.2f</string>
+    <string name="price_terse_dummy">--</string>
+    <string name="price_terse_format" formatted="false">%.0f</string>
     <string name="currency_pair_dummy">--/--</string>
     <string name="currency_pair_format" formatted="false">%s/%s</string>
     <string name="high_price_dummy">▲ --.--</string>

@@ -84,14 +84,25 @@
     <style name="price_widget_layout">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">match_parent</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:gravity">center</item>
         <item name="android:background">@drawable/matte_bg_light</item>
     </style>
     <style name="price_widget_price">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_alignParentTop">true</item>
-        <item name="android:layout_centerHorizontal">true</item>
-        <item name="android:textSize">20sp</item>
+        <item name="android:textSize">28sp</item>
         <item name="android:textColor">@color/dark_text</item>
+    </style>
+    <style
+        name="price_widget_currency"
+        parent="price_widget_price"
+        >
+        <item name="android:textSize">12sp</item>
+    </style>
+    <style
+        name="price_widget_exchange"
+        parent="price_widget_currency"
+        >
     </style>
 </resources>

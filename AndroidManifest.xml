@@ -36,6 +36,12 @@
                 <data android:scheme="data"/>
             </intent-filter>
         </receiver>
+        <receiver android:name="WidgetUpdateReceiver">
+            <intent-filter>
+                <action android:name="com.netversa.btcprice.ACTION_FETCH_RESPONSE"/>
+                <data android:scheme="data"/>
+            </intent-filter>
+        </receiver>
         <!-- Widgets -->
         <receiver android:name="PriceWidgetProvider">
             <intent-filter>
