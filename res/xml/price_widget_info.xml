@@ -7,7 +7,7 @@
     android:minWidth="40dp"
     android:minHeight="40dp"
     android:initialLayout="@layout/price_widget_loading"
-    android:resizeMode="horizontal|vertical"
+    android:resizeMode=""
     android:widgetCategory="home_screen|keyguard"
     android:updatePeriodMillis="0"
     />
