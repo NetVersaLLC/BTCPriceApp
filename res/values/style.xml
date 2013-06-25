@@ -109,4 +109,35 @@
         parent="price_widget_currency"
         >
     </style>
+    <!-- Lockscreen Price Widget -->
+    <style
+        name="lock_price_widget_layout"
+        parent="price_widget_layout"
+        >
+        <item name="android:background">@color/transparent</item>
+    </style>
+    <style
+        name="lock_price_widget_load_emblem"
+        parent="price_widget_load_emblem"
+        >
+    </style>
+    <style
+        name="lock_price_widget_price"
+        parent="price_widget_price"
+        >
+        <item name="android:textSize">64sp</item>
+        <item name="android:textColor">@color/light_text</item>
+    </style>
+    <style
+        name="lock_price_widget_currency"
+        parent="lock_price_widget_price"
+        >
+        <item name="android:textSize">12sp</item>
+    </style>
+    <style
+        name="lock_price_widget_exchange"
+        parent="lock_price_widget_currency"
+        >
+        <item name="android:layout_marginLeft">8dp</item>
+    </style>
 </resources>
