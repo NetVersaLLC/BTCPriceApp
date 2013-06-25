@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright 2013 NetVersa LLC
+-->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget"
+    style="@style/price_widget_layout"
+    >
+    <TextView
+        android:id="@+id/price"
+        style="@style/price_widget_price"
+        android:text="@string/price_terse_dummy"
+        />
+    <TextView
+        android:id="@+id/currency"
+        style="@style/price_widget_currency"
+        />
+    <TextView
+        android:id="@+id/exchange"
+        style="@style/price_widget_exchange"
+        />
+</LinearLayout>
