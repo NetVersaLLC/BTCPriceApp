@@ -59,43 +59,50 @@ public class WidgetUpdateReceiver extends BroadcastReceiver
         for(int widgetId : wManager.getAppWidgetIds(new ComponentName(context,
                         PriceWidgetProvider.class)))
         {
-            int remoteViewsId = R.layout.price_widget;
-            int priceFormatId = R.string.price_terse_format;
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
-            {
-                Bundle options = wManager.getAppWidgetOptions(widgetId);
-                int category = options.getInt(
-                        AppWidgetManager.OPTION_APPWIDGET_HOST_CATEGORY, -1);
-                if(category == AppWidgetProviderInfo.WIDGET_CATEGORY_KEYGUARD)
-                {
-                    remoteViewsId = R.layout.lockscreen_price_widget;
-                    priceFormatId = R.string.price_format;
-                }
-            }
-
-            RemoteViews widgetViews = new RemoteViews(context.getPackageName(),
-                    remoteViewsId);
-
-            String priceText = String.format(
-                    context.getString(priceFormatId),
-                    data.lastPrice);
-            String currencyText = String.format(
-                    context.getString(R.string.currency_pair_format),
-                    data.baseCurrency, data.counterCurrency);
-            String exchangeText =
-                Exchanges.instance().label(context, data.exchangeName);
-
-            widgetViews.setTextViewText(R.id.price, priceText);
-            widgetViews.setTextViewText(R.id.currency, currencyText);
-            widgetViews.setTextViewText(R.id.exchange, exchangeText);
-
-            PendingIntent wIntent = PendingIntent.getActivity(context, 0,
-                    context.getPackageManager().getLaunchIntentForPackage(
-                        context.getPackageName()), 0);
-
-            widgetViews.setOnClickPendingIntent(R.id.widget, wIntent);
-
-            wManager.updateAppWidget(widgetId, widgetViews);
+            updateWidget(context, wManager, widgetId, data);
         }
+    }
+
+    /** Update an individual widget's views.
+     */
+    protected void updateWidget(Context context, AppWidgetManager wManager,
+            int widgetId, MarketData data)
+    {
+        int remoteViewsId = R.layout.price_widget;
+        int priceFormatId = R.string.price_terse_format;
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
+        {
+            Bundle options = wManager.getAppWidgetOptions(widgetId);
+            int category = options.getInt(
+                    AppWidgetManager.OPTION_APPWIDGET_HOST_CATEGORY, -1);
+            if(category == AppWidgetProviderInfo.WIDGET_CATEGORY_KEYGUARD)
+            {
+                remoteViewsId = R.layout.lockscreen_price_widget;
+                priceFormatId = R.string.price_format;
+            }
+        }
+
+        RemoteViews widgetViews = new RemoteViews(context.getPackageName(),
+                remoteViewsId);
+
+        String priceText = String.format( context.getString(priceFormatId),
+                data.lastPrice);
+        String currencyText = String.format(
+                context.getString(R.string.currency_pair_format),
+                data.baseCurrency, data.counterCurrency);
+        String exchangeText =
+            Exchanges.instance().label(context, data.exchangeName);
+
+        widgetViews.setTextViewText(R.id.price, priceText);
+        widgetViews.setTextViewText(R.id.currency, currencyText);
+        widgetViews.setTextViewText(R.id.exchange, exchangeText);
+
+        PendingIntent wIntent = PendingIntent.getActivity(context, 0,
+                context.getPackageManager().getLaunchIntentForPackage(
+                    context.getPackageName()), 0);
+
+        widgetViews.setOnClickPendingIntent(R.id.widget, wIntent);
+
+        wManager.updateAppWidget(widgetId, widgetViews);
     }
 }

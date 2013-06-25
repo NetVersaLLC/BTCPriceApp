@@ -43,7 +43,7 @@ public class PriceWidgetProvider extends AppWidgetProvider
 
     /** Update an individual widget's views.
      */
-    private void updateWidget(Context context, AppWidgetManager wManager,
+    protected void updateWidget(Context context, AppWidgetManager wManager,
             int widgetId)
     {
         int remoteViewsId = R.layout.price_widget_loading;
