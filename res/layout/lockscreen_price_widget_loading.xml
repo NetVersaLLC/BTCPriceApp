@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright 2013 NetVersa LLC
+-->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget"
+    style="@style/lock_price_widget_layout"
+    >
+    <ImageView
+        style="@style/lock_price_widget_load_emblem"
+        android:src="@drawable/launcher_icon"
+        />
+</LinearLayout>

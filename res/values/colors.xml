@@ -7,4 +7,6 @@
     <color name="increase">#50c878</color>
     <color name="decrease">#e34234</color>
     <color name="dark_text">#000000</color>
+    <color name="light_text">#ffffff</color>
+    <color name="transparent">#00000000</color>
 </resources>

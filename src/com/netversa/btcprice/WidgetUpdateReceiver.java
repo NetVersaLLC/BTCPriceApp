@@ -5,11 +5,14 @@ package com.netversa.btcprice;
 
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
+import android.appwidget.AppWidgetProviderInfo;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
+import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.widget.RemoteViews;
 
@@ -56,11 +59,25 @@ public class WidgetUpdateReceiver extends BroadcastReceiver
         for(int widgetId : wManager.getAppWidgetIds(new ComponentName(context,
                         PriceWidgetProvider.class)))
         {
+            int remoteViewsId = R.layout.price_widget;
+            int priceFormatId = R.string.price_terse_format;
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
+            {
+                Bundle options = wManager.getAppWidgetOptions(widgetId);
+                int category = options.getInt(
+                        AppWidgetManager.OPTION_APPWIDGET_HOST_CATEGORY, -1);
+                if(category == AppWidgetProviderInfo.WIDGET_CATEGORY_KEYGUARD)
+                {
+                    remoteViewsId = R.layout.lockscreen_price_widget;
+                    priceFormatId = R.string.price_format;
+                }
+            }
+
             RemoteViews widgetViews = new RemoteViews(context.getPackageName(),
-                    R.layout.price_widget);
+                    remoteViewsId);
 
             String priceText = String.format(
-                    context.getString(R.string.price_terse_format),
+                    context.getString(priceFormatId),
                     data.lastPrice);
             String currencyText = String.format(
                     context.getString(R.string.currency_pair_format),

@@ -6,8 +6,11 @@ package com.netversa.btcprice;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
+import android.appwidget.AppWidgetProviderInfo;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
+import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.widget.RemoteViews;
 
@@ -24,18 +27,9 @@ public class PriceWidgetProvider extends AppWidgetProvider
     public void onUpdate(Context context, AppWidgetManager appWidgetManager,
             int[] appWidgetIds)
     {
-        RemoteViews widgetViews = new RemoteViews(context.getPackageName(),
-                R.layout.price_widget_loading);
-
-        PendingIntent wIntent = PendingIntent.getActivity(context, 0,
-                context.getPackageManager().getLaunchIntentForPackage(
-                    context.getPackageName()), 0);
-
-        widgetViews.setOnClickPendingIntent(R.id.widget, wIntent);
-
         for(int widgetId : appWidgetIds)
         {
-            appWidgetManager.updateAppWidget(widgetId, widgetViews);
+            updateWidget(context, appWidgetManager, widgetId);
         }
 
         SharedPreferences prefs =
@@ -45,6 +39,35 @@ public class PriceWidgetProvider extends AppWidgetProvider
                 prefs.getString("def_exchange", Defaults.DEF_EXCHANGE),
                 prefs.getString("def_base", Defaults.DEF_BASE),
                 prefs.getString("def_counter", Defaults.DEF_COUNTER));
+    }
+
+    /** Update an individual widget's views.
+     */
+    private void updateWidget(Context context, AppWidgetManager wManager,
+            int widgetId)
+    {
+        int remoteViewsId = R.layout.price_widget_loading;
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
+        {
+            Bundle options = wManager.getAppWidgetOptions(widgetId);
+            int category = options.getInt(
+                    AppWidgetManager.OPTION_APPWIDGET_HOST_CATEGORY, -1);
+            if(category == AppWidgetProviderInfo.WIDGET_CATEGORY_KEYGUARD)
+            {
+                remoteViewsId = R.layout.lockscreen_price_widget_loading;
+            }
+        }
+
+        RemoteViews widgetViews = new RemoteViews(context.getPackageName(),
+                remoteViewsId);
+
+        PendingIntent wIntent = PendingIntent.getActivity(context, 0,
+                context.getPackageManager().getLaunchIntentForPackage(
+                    context.getPackageName()), 0);
+
+        widgetViews.setOnClickPendingIntent(R.id.widget, wIntent);
+
+        wManager.updateAppWidget(widgetId, widgetViews);
     }
 
     /** When the first widget is placed, mark price widgets as active in global
