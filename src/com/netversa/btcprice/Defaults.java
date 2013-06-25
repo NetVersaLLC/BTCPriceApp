@@ -16,6 +16,9 @@ public class Defaults
     public static final long FETCH_TIMEOUT = 30000;
     public static final boolean ONGOING_PRICE = false;
 
+    // 1 minute in ms
+    public static final long STALENESS_THRESHOLD = 60000;
+
     public static final long LAST_SCHED_FETCH = 0;
     // _FETCH_INTERVAL covers an arbitrary number of prefs relating to
     // service frequencies

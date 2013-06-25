@@ -45,6 +45,13 @@
         <item name="android:singleLine">true</item>
     </style>
     <style
+        name="headline_staleness"
+        parent="@style/headline_price"
+        >
+        <item name="android:visibility">gone</item>
+        <item name="android:textSize">20sp</item>
+    </style>
+    <style
         name="headline_currency"
         parent="@style/headline_price"
         >

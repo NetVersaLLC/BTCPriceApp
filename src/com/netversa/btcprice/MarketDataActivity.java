@@ -3,6 +3,8 @@
  */
 package com.netversa.btcprice;
 
+import java.util.Date;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -34,6 +36,7 @@ public class MarketDataActivity extends BaseActivity
 
     // views
     protected TextView errorView;
+    protected TextView stalenessView;
     protected TextView priceView;
     protected TextView currencyView;
     protected TextView highPriceView;
@@ -60,6 +63,7 @@ public class MarketDataActivity extends BaseActivity
 
         // grab views
         errorView = (TextView) findViewById(R.id.error);
+        stalenessView = (TextView) findViewById(R.id.staleness);
         priceView = (TextView) findViewById(R.id.price);
         currencyView = (TextView) findViewById(R.id.currency);
         highPriceView = (TextView) findViewById(R.id.high_price);
@@ -107,6 +111,13 @@ public class MarketDataActivity extends BaseActivity
         }
     }
 
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+        updateStaleness();
+    }
+
     /** Start a fetch and sync the UI to it.
      */
     protected void startFetch()
@@ -151,6 +162,7 @@ public class MarketDataActivity extends BaseActivity
     protected void displayFetchIndicators()
     {
         showError(errorString);
+        stalenessView.setVisibility(View.GONE);
 
         priceView.setText(R.string.price_dummy);
         currencyView.setText(R.string.currency_pair_dummy);
@@ -206,6 +218,27 @@ public class MarketDataActivity extends BaseActivity
                         cachedMarketData.lowPrice));
             volumeView.setText(String.format(getString(R.string.volume_format),
                         cachedMarketData.volume));
+        }
+
+        updateStaleness();
+    }
+
+    protected void updateStaleness()
+    {
+        if(cachedMarketData == null || cachedMarketData.timestamp == null)
+        {
+            stalenessView.setVisibility(View.GONE);
+            return;
+        }
+
+        long stalenessMillis = System.currentTimeMillis() -
+            cachedMarketData.timestamp.getTime();
+
+        if(stalenessMillis >= prefs.getLong("staleness_threshold",
+                    Defaults.STALENESS_THRESHOLD))
+        {
+            stalenessView.setText("STALE");
+            stalenessView.setVisibility(View.VISIBLE);
         }
     }
 
