@@ -3,9 +3,6 @@
  */
 package com.netversa.btcprice;
 
-import java.text.DateFormat;
-import java.util.Date;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -232,27 +229,10 @@ public class MarketDataActivity extends BaseActivity
             return;
         }
 
-        Date currentDate = new Date(System.currentTimeMillis());
-        long stalenessMillis = currentDate.getTime() -
-            cachedMarketData.timestamp.getTime();
-
-        if(stalenessMillis >= prefs.getLong("staleness_threshold",
-                    Defaults.STALENESS_THRESHOLD))
+        if(CacheTools.isStale(this, cachedMarketData))
         {
-            DateFormat dFmt =
-                android.text.format.DateFormat.getDateFormat(this);
-            String dateString = dFmt.format(cachedMarketData.timestamp);
-            DateFormat tFmt =
-                android.text.format.DateFormat.getTimeFormat(this);
-            String timeString = tFmt.format(cachedMarketData.timestamp);
-            String staleString = timeString;
-            if(!dateString.equals(dFmt.format(currentDate)))
-            {
-                staleString += " " + dateString;
-            }
-            staleString = String.format(
-                    getString(R.string.as_of_format), staleString);
-            stalenessView.setText(staleString);
+            stalenessView.setText(
+                    CacheTools.stalenessBanner(this, cachedMarketData));
             stalenessView.setVisibility(View.VISIBLE);
         }
     }
