@@ -12,6 +12,11 @@
             style="@style/error_view"
             />
         <TextView
+            android:id="@+id/staleness"
+            style="@style/headline_staleness"
+            android:layout_marginBottom="-16dp"
+            />
+        <TextView
             android:id="@+id/price"
             style="@style/headline_price"
             android:text="@string/price_dummy"
