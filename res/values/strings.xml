@@ -28,6 +28,7 @@
     <string name="low_price_format" formatted="false">▼ %.2f</string>
     <string name="volume_dummy">Volume: ---</string>
     <string name="volume_format" formatted="false">Volume: %.0f</string>
+    <string name="as_of_format" formatted="false">as of %s</string>
 
     <string name="ongoing_price_format" formatted="false">%.2f %s</string>
     <string name="ongoing_currency_format" formatted="false">%s %s</string>
