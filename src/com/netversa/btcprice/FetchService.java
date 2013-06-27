@@ -21,6 +21,7 @@ import android.os.PatternMatcher;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
 
+import com.xeiam.xchange.dto.marketdata.Trades;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.ExchangeFactory;
 import com.xeiam.xchange.dto.marketdata.Ticker;
@@ -233,13 +234,13 @@ public class FetchService extends Service
             String baseCurrency, String counterCurrency)
     {
         // TODO select exchange based on URI
-        Ticker ticker;
+        Trades trades;
         try
         {
             Exchange exchange = getExchange(exchangeName);
             PollingMarketDataService exchangeData =
                 exchange.getPollingMarketDataService();
-            ticker = exchangeData.getTicker(baseCurrency,
+            trades = exchangeData.getTrades(baseCurrency,
                     counterCurrency);
         }
         // lazy catch-all with pass-through to user
@@ -256,13 +257,13 @@ public class FetchService extends Service
             return output;
         }
 
-        MarketData result = new MarketData(exchangeName, baseCurrency,
-                counterCurrency, ticker.getLast().getAmount(),
-                ticker.getBid().getAmount(), ticker.getAsk().getAmount(),
-                ticker.getHigh().getAmount(), ticker.getLow().getAmount(),
-                ticker.getVolume(), ticker.getTimestamp());
-
-        output.putExtra(EXTRA_MARKET_DATA, result);
+        //MarketData result = new MarketData(exchangeName, baseCurrency,
+                //counterCurrency, ticker.getLast().getAmount(),
+                //ticker.getBid().getAmount(), ticker.getAsk().getAmount(),
+                //ticker.getHigh().getAmount(), ticker.getLow().getAmount(),
+                //ticker.getVolume(), ticker.getTimestamp());
+//
+        //output.putExtra(EXTRA_MARKET_DATA, result);
 
         return output;
     }
