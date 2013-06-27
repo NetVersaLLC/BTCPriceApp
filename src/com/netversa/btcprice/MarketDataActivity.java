@@ -6,6 +6,7 @@ package com.netversa.btcprice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -16,6 +17,12 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.xeiam.xchange.currency.Currencies;
+
+import org.stockchart.StockChartView;
+import org.stockchart.core.Appearance;
+import org.stockchart.core.Area;
+import org.stockchart.points.StockPoint;
+import org.stockchart.series.StockSeries;
 
 /** Simple activity to display and update prices on demand.
  */
@@ -40,7 +47,7 @@ public class MarketDataActivity extends BaseActivity
     protected TextView highPriceView;
     protected TextView lowPriceView;
     protected TextView volumeView;
-    protected CandlestickChartView chartView;
+    protected StockChartView chartView;
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -67,7 +74,7 @@ public class MarketDataActivity extends BaseActivity
         highPriceView = (TextView) findViewById(R.id.high_price);
         lowPriceView = (TextView) findViewById(R.id.low_price);
         volumeView = (TextView) findViewById(R.id.volume);
-        chartView = (CandlestickChartView) findViewById(R.id.chart);
+        chartView = (StockChartView) findViewById(R.id.chart);
 
         // setup data
 
@@ -82,6 +89,8 @@ public class MarketDataActivity extends BaseActivity
             errorString = savedInstanceState.getString("errorString");
             expectResultsBy = savedInstanceState.getLong("expectResultsBy");
         }
+
+        styleCandlesticks();
 
         // only automatically start a fetch if the activity is starting for the
         // first time
@@ -250,6 +259,52 @@ public class MarketDataActivity extends BaseActivity
         }
         errorView.setText(error);
         errorView.setVisibility(View.VISIBLE);
+    }
+
+    /** Configure style attributes of the candlestick chart.
+     */
+    protected void styleCandlesticks()
+    {
+        // set the candlestick chart's background to transparent since it oddly
+        // isn't the default
+        chartView.setClearColor(Color.TRANSPARENT);
+        Area area = new Area();
+        area.setName("candlesticks");
+        area.setTitle("");
+
+        area.getLeftAxis().setVisible(false);
+        area.getRightAxis().setVisible(false);
+        area.getTopAxis().setVisible(false);
+        area.getBottomAxis().setVisible(false);
+        area.getLeftAxis().setLinesCount(0);
+        area.getRightAxis().setLinesCount(0);
+        area.getBottomAxis().setLinesCount(0);
+        area.getTopAxis().setLinesCount(0);
+
+        chartView.getAreas().add(area);
+
+        StockSeries series = new StockSeries();
+        series.getAppearance().setTextColor(Color.BLACK);
+        series.setName("price");
+        // upward candles
+        series.getRiseAppearance().setPrimaryFillColor(
+                getResources().getColor(R.color.increase));
+        series.getRiseAppearance().setSecondaryFillColor(
+                getResources().getColor(R.color.increase));
+        series.getRiseAppearance().setGradient(Appearance.Gradient.NONE);
+        // downward candles
+        series.getFallAppearance().setPrimaryFillColor(
+                getResources().getColor(R.color.decrease));
+        series.getFallAppearance().setSecondaryFillColor(
+                getResources().getColor(R.color.decrease));
+        series.getFallAppearance().setGradient(Appearance.Gradient.NONE);
+        area.getSeries().add(series);
+        StockPoint point = new StockPoint();
+        point.setValues(2.0f,4.0f,1.0f,3.0f);
+        series.getPoints().add(point);
+        point = new StockPoint();
+        point.setValues(3.0f,1.0f,4.0f,2.0f);
+        series.getPoints().add(point);
     }
 
     @Override
