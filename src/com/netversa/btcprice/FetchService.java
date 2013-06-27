@@ -54,8 +54,11 @@ public class FetchService extends Service
 
     public static final String DATA_SCHEME = "data";
     public static final String MARKET_DATA_ACTION = "market";
+    public static final String LAST_TRADES_ACTION = "trades";
     public static final String MARKET_DATA_URI_FORMAT = DATA_SCHEME +
         "://%s/" + MARKET_DATA_ACTION + "/%s/%s";
+    public static final String LAST_TRADES_URI_FORMAT = DATA_SCHEME +
+        "://%s/" + LAST_TRADES_ACTION + "/%s/%s";
 
     protected ActiveTargetSet activeTargets;
     // exchanges are probably cached by the ExchangeFactory singleton, but
@@ -155,6 +158,25 @@ public class FetchService extends Service
             fetchMarketData(resultIntent, exchangeName, baseCurrency,
                     counterCurrency);
         }
+        // last trades
+        else if(LAST_TRADES_ACTION.equalsIgnoreCase(fetchAction))
+        {
+            if(arguments.size() != 3)
+            {
+                String format =
+                    getString(R.string.fetch_error_wrong_arity_format);
+                String errorString = String.format(format, fetchAction, 2);
+                resultIntent.putExtra(EXTRA_ERROR_STRING, errorString);
+                sendBroadcast(resultIntent);
+                finalizeFetch(target);
+                return;
+            }
+            String baseCurrency = arguments.get(1);
+            String counterCurrency = arguments.get(2);
+
+            fetchLastTrades(resultIntent, exchangeName, baseCurrency,
+                    counterCurrency);
+        }
         // unknown action
         else
         {
@@ -170,6 +192,44 @@ public class FetchService extends Service
     }
 
     protected Intent fetchMarketData(Intent output, String exchangeName,
+            String baseCurrency, String counterCurrency)
+    {
+        // TODO select exchange based on URI
+        Ticker ticker;
+        try
+        {
+            Exchange exchange = getExchange(exchangeName);
+            PollingMarketDataService exchangeData =
+                exchange.getPollingMarketDataService();
+            ticker = exchangeData.getTicker(baseCurrency,
+                    counterCurrency);
+        }
+        // lazy catch-all with pass-through to user
+        catch(Throwable e)
+        {
+            // prefer a concise human-readable error but fall back on the
+            // generally more verbose getString()
+            String errorString = e.getMessage();
+            if(errorString == null)
+            {
+                errorString = e.toString();
+            }
+            output.putExtra(EXTRA_ERROR_STRING, errorString);
+            return output;
+        }
+
+        MarketData result = new MarketData(exchangeName, baseCurrency,
+                counterCurrency, ticker.getLast().getAmount(),
+                ticker.getBid().getAmount(), ticker.getAsk().getAmount(),
+                ticker.getHigh().getAmount(), ticker.getLow().getAmount(),
+                ticker.getVolume(), ticker.getTimestamp());
+
+        output.putExtra(EXTRA_MARKET_DATA, result);
+
+        return output;
+    }
+
+    protected Intent fetchLastTrades(Intent output, String exchangeName,
             String baseCurrency, String counterCurrency)
     {
         // TODO select exchange based on URI
@@ -237,7 +297,17 @@ public class FetchService extends Service
                     baseCurrency, counterCurrency));
     }
 
-    /** Helper function to send a fetch request to this service.
+    /** Helper function to produce a data URI to request the last trades for an
+     * exchange and currency pair.
+     */
+    public static Uri tradesTarget(String exchange, String baseCurrency, String
+            counterCurrency)
+    {
+        return Uri.parse(String.format(LAST_TRADES_URI_FORMAT, exchange,
+                    baseCurrency, counterCurrency));
+    }
+
+    /** Helper function to send a market data fetch request to this service.
      *  @param receiver BroadcastReceiver that will receive result, or null
      */
     public static ComponentName requestMarket(Context context,
@@ -246,6 +316,27 @@ public class FetchService extends Service
     {
         Uri target = marketTarget(exchange, baseCurrency, counterCurrency);
 
+        return sendRequest(context, target, receiver);
+    }
+
+    /** Helper function to send a last trades fetch request to this service.
+     *  @param receiver BroadcastReceiver that will receive result, or null
+     */
+    public static ComponentName requestTrades(Context context,
+            BroadcastReceiver receiver, String exchange, String baseCurrency,
+            String counterCurrency)
+    {
+        Uri target = tradesTarget(exchange, baseCurrency, counterCurrency);
+
+        return sendRequest(context, target, receiver);
+    }
+
+    /** Helper function to send a generalized fetch request to this service.
+     *  @param receiver BroadcastReceiver that will receive result, or null
+     */
+    public static ComponentName sendRequest(Context context, Uri target,
+            BroadcastReceiver receiver)
+    {
         if(receiver != null)
         {
             IntentFilter filter = new IntentFilter(ACTION_RESPONSE);
@@ -268,7 +359,8 @@ public class FetchService extends Service
         SharedPreferences prefs =
             PreferenceManager.getDefaultSharedPreferences(context);
 
-        String exchange = prefs.getString("def_exchange", Defaults.DEF_EXCHANGE);
+        String exchange = prefs.getString("def_exchange",
+                Defaults.DEF_EXCHANGE);
         String baseCurrency =
             prefs.getString("def_base", Defaults.DEF_BASE);
         String counterCurrency =
