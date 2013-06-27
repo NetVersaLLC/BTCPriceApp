@@ -44,7 +44,7 @@
             style="@style/volume"
             android:text="@string/volume_dummy"
             />
-        <com.netversa.btcprice.CandlestickChartView
+        <org.stockchart.StockChartView
             android:id="@+id/chart"
             style="@style/candlestick_single"
             />
