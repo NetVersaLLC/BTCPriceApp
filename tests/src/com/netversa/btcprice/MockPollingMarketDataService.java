@@ -3,27 +3,33 @@
  */
 package com.netversa.btcprice;
 
-import java.util.List;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.joda.money.BigMoney;
 import org.joda.money.CurrencyUnit;
 
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
+import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.marketdata.OrderBook;
 import com.xeiam.xchange.dto.marketdata.Ticker;
+import com.xeiam.xchange.dto.marketdata.Trade;
 import com.xeiam.xchange.dto.marketdata.Trades;
 import com.xeiam.xchange.service.marketdata.polling.PollingMarketDataService;
 
 public class MockPollingMarketDataService implements PollingMarketDataService
 {
     protected MarketData marketData;
+    protected List<Transaction> trades;
 
-    public MockPollingMarketDataService(MarketData dummyData)
+    public MockPollingMarketDataService(MarketData dummyMarketData,
+            List<Transaction> dummyTrades)
     {
-        marketData = dummyData;
+        marketData = dummyMarketData;
+        trades = dummyTrades;
     }
 
     public List<CurrencyPair> getExchangeSymbols()
@@ -64,6 +70,18 @@ public class MockPollingMarketDataService implements PollingMarketDataService
     public Trades getTrades(String tradableIdentifier, String currency,
             Object... args)
     {
-        throw new UnsupportedOperationException();
+        List<Trade> result = new ArrayList<Trade>();
+
+        for(Transaction ee : trades)
+        {
+            Order.OrderType type = ee.type == Transaction.BID ?
+                Order.OrderType.BID : Order.OrderType.ASK;
+            CurrencyUnit counter = CurrencyUnit.of(ee.counterCurrency);
+            result.add(new Trade(type, ee.quantity, ee.baseCurrency,
+                        ee.counterCurrency, BigMoney.of(counter, ee.price),
+                        ee.timestamp));
+        }
+
+        return new Trades(result);
     }
 }

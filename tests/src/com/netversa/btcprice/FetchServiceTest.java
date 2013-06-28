@@ -4,7 +4,9 @@
 package com.netversa.btcprice;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
@@ -27,6 +29,7 @@ public class FetchServiceTest extends ServiceTestCase<FetchService>
     protected IntentFilter intentFilter;
     protected Context ctx;
     protected MarketData marketData;
+    protected List<Transaction> trades;
     protected Map<String, Exchange> mockExchangeCache;
 
     public FetchServiceTest()
@@ -41,9 +44,12 @@ public class FetchServiceTest extends ServiceTestCase<FetchService>
                 new BigDecimal("1.01"), new BigDecimal("1.99"),
                 new BigDecimal("0.01"), new BigDecimal("100.00"),
                 new Date(1369196546000l));
+        trades = new ArrayList<Transaction>();
+        trades.add(new Transaction(Transaction.BID, new BigDecimal("9001.00"),
+                    "BTC", "USD", new BigDecimal("1"), new Date(1369197546000l)));
 
         mockExchangeCache = new ConcurrentHashMap<String, Exchange>();
-        mockExchangeCache.put(Exchanges.MT_GOX, new MockExchange(marketData));
+        mockExchangeCache.put(Exchanges.MT_GOX, new MockExchange(marketData, trades));
     }
 
     protected void setUp() throws Exception
@@ -214,6 +220,40 @@ public class FetchServiceTest extends ServiceTestCase<FetchService>
                     TimeUnit.MILLISECONDS))
         {
             fail("market-fetch timed out");
+        }
+        ctx.unregisterReceiver(receiver);
+    }
+
+    public void testLastTradesFetch() throws Throwable
+    {
+        final Semaphore completeCondition = new Semaphore(0);
+        String goodTarget = "data://mtgox/trades/BTC/USD";
+
+        BroadcastReceiver receiver = new BroadcastReceiver() {
+            public void onReceive(Context context, Intent intent) {
+                assertEquals("trades-fetch error string", null,
+                    intent.getStringExtra(FetchService.EXTRA_ERROR_STRING));
+                assertEquals("trades-fetch market data", trades,
+                    intent.getParcelableArrayListExtra(
+                        FetchService.EXTRA_LAST_TRADES));
+                completeCondition.release();
+            }
+        };
+
+        ctx.registerReceiver(receiver, intentFilter);
+
+        setupService();
+        FetchService service = getService();
+        assertNotNull("trades-fetch service not created!", service);
+        service.exchangeCache = mockExchangeCache;
+
+        startService(new Intent(FetchService.ACTION_REQUEST,
+                Uri.parse(goodTarget)));
+
+        if(!completeCondition.tryAcquire(TEST_TIMEOUT_MS,
+                    TimeUnit.MILLISECONDS))
+        {
+            fail("trades-fetch timed out");
         }
         ctx.unregisterReceiver(receiver);
     }

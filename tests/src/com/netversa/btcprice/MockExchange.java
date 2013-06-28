@@ -3,6 +3,8 @@
  */
 package com.netversa.btcprice;
 
+import java.util.List;
+
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.ExchangeSpecification;
 import com.xeiam.xchange.service.account.polling.PollingAccountService;
@@ -14,10 +16,13 @@ import com.xeiam.xchange.service.streaming.StreamingExchangeService;
 public class MockExchange implements Exchange
 {
     protected MarketData marketData;
+    protected List<Transaction> trades;
 
-    public MockExchange(MarketData dummyData)
+    public MockExchange(MarketData dummyMarketData,
+            List<Transaction> dummyTrades)
     {
-        marketData = dummyData;
+        marketData = dummyMarketData;
+        trades = dummyTrades;
     }
 
     public ExchangeSpecification getExchangeSpecification()
@@ -37,7 +42,7 @@ public class MockExchange implements Exchange
 
     public PollingMarketDataService getPollingMarketDataService()
     {
-        return new MockPollingMarketDataService(marketData);
+        return new MockPollingMarketDataService(marketData, trades);
     }
 
     public PollingMarketDataService getPollingMarketDataService(
