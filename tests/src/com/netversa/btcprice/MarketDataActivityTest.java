@@ -129,7 +129,7 @@ public class MarketDataActivityTest
 
         // test successful fetch
 
-        activity.registerReceiver(activity.responseReceiver, filter);
+        activity.registerReceiver(activity.marketDataReceiver, filter);
 
         final Intent successIntent =
             new Intent(FetchService.ACTION_RESPONSE, target);
@@ -138,7 +138,7 @@ public class MarketDataActivityTest
         runTestOnUiThread(new Runnable() {
             public void run() {
                 activity.startFetch();
-                activity.responseReceiver.onReceive(activity, successIntent);
+                activity.marketDataReceiver.onReceive(activity, successIntent);
             }
         });
 
@@ -149,7 +149,7 @@ public class MarketDataActivityTest
 
         // test failed fetch
 
-        activity.registerReceiver(activity.responseReceiver, filter);
+        activity.registerReceiver(activity.marketDataReceiver, filter);
 
         final Intent failureIntent =
             new Intent(FetchService.ACTION_RESPONSE, target);
@@ -158,7 +158,7 @@ public class MarketDataActivityTest
         runTestOnUiThread(new Runnable() {
             public void run() {
                 activity.startFetch();
-                activity.responseReceiver.onReceive(activity, failureIntent);
+                activity.marketDataReceiver.onReceive(activity, failureIntent);
             }
         });
 

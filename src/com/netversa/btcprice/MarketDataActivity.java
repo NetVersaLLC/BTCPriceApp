@@ -36,7 +36,7 @@ public class MarketDataActivity extends BaseActivity
     // TODO recreate timeout from bundle
     protected Runnable timeout;
 
-    protected BroadcastReceiver responseReceiver;
+    protected BroadcastReceiver marketDataReceiver;
     protected Handler handler;
 
     // views
@@ -78,7 +78,7 @@ public class MarketDataActivity extends BaseActivity
 
         // setup data
 
-        responseReceiver = new FetchReceiver();
+        marketDataReceiver = new MarketDataReceiver();
 
         if(savedInstanceState != null)
         {
@@ -151,7 +151,7 @@ public class MarketDataActivity extends BaseActivity
         }
         displayFetchIndicators();
 
-        FetchService.requestMarket(this, responseReceiver,
+        FetchService.requestMarket(this, marketDataReceiver,
                 prefs.getString("def_exchange", Defaults.DEF_EXCHANGE),
                 prefs.getString("def_base", Defaults.DEF_BASE),
                 prefs.getString("def_counter", Defaults.DEF_COUNTER));
@@ -186,7 +186,7 @@ public class MarketDataActivity extends BaseActivity
         handler.removeCallbacks(timeout);
         try
         {
-            unregisterReceiver(responseReceiver);
+            unregisterReceiver(marketDataReceiver);
         }
         catch(IllegalArgumentException e)
         {
@@ -342,7 +342,7 @@ public class MarketDataActivity extends BaseActivity
         return true;
     }
 
-    protected class FetchReceiver extends BroadcastReceiver
+    protected class MarketDataReceiver extends BroadcastReceiver
     {
         public void onReceive(Context context, Intent intent)
         {
