@@ -3,6 +3,7 @@
  */
 package com.netversa.btcprice;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -21,10 +22,12 @@ import android.os.PatternMatcher;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
 
-import com.xeiam.xchange.dto.marketdata.Trades;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.ExchangeFactory;
+import com.xeiam.xchange.dto.Order;
 import com.xeiam.xchange.dto.marketdata.Ticker;
+import com.xeiam.xchange.dto.marketdata.Trade;
+import com.xeiam.xchange.dto.marketdata.Trades;
 import com.xeiam.xchange.mtgox.v1.MtGoxExchange;
 import com.xeiam.xchange.service.marketdata.polling.PollingMarketDataService;
 
@@ -48,6 +51,8 @@ public class FetchService extends Service
         "com.netversa.btcprice.ACTION_FETCH_RESPONSE";
     public static final String EXTRA_MARKET_DATA =
         "com.netversa.btcprice.EXTRA_MARKET_DATA";
+    public static final String EXTRA_LAST_TRADES =
+        "com.netversa.btcprice.EXTRA_LAST_TRADES";
     public static final String EXTRA_ERROR_STRING =
         "com.netversa.btcprice.EXTRA_ERROR_STRING";
     public static final String EXTRA_SCHED_FETCH =
@@ -257,13 +262,16 @@ public class FetchService extends Service
             return output;
         }
 
-        //MarketData result = new MarketData(exchangeName, baseCurrency,
-                //counterCurrency, ticker.getLast().getAmount(),
-                //ticker.getBid().getAmount(), ticker.getAsk().getAmount(),
-                //ticker.getHigh().getAmount(), ticker.getLow().getAmount(),
-                //ticker.getVolume(), ticker.getTimestamp());
-//
-        //output.putExtra(EXTRA_MARKET_DATA, result);
+        ArrayList<Transaction> result = new ArrayList<Transaction>();
+        for(Trade ee : trades.getTrades())
+        {
+            String type = ee.getType() == Order.OrderType.BID ?
+                Transaction.BID : Transaction.ASK;
+            result.add(new Transaction(type, ee.getTradableAmount(),
+                        ee.getTradableIdentifier(), ee.getTransactionCurrency(),
+                        ee.getPrice().getAmount(), ee.getTimestamp()));
+        }
+        output.putExtra(EXTRA_LAST_TRADES, result);
 
         return output;
     }
