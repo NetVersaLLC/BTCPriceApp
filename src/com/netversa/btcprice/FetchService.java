@@ -271,7 +271,7 @@ public class FetchService extends Service
                         ee.getTradableIdentifier(), ee.getTransactionCurrency(),
                         ee.getPrice().getAmount(), ee.getTimestamp()));
         }
-        output.putExtra(EXTRA_LAST_TRADES, result);
+        output.putParcelableArrayListExtra(EXTRA_LAST_TRADES, result);
 
         return output;
     }
