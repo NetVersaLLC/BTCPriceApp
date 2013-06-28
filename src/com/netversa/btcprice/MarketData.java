@@ -83,7 +83,7 @@ public class MarketData implements Parcelable
     /** Simple equals() helper function.  Checks if either operand is null and
      * if not punts to the equals() function of the left-hand operand.
      */
-    protected boolean eq(Object lhs, Object rhs)
+    protected static boolean eq(Object lhs, Object rhs)
     {
         if(lhs == null && rhs == null)
         {
@@ -101,16 +101,16 @@ public class MarketData implements Parcelable
     public int hashCode()
     {
         int output = 0;
-        output += exchangeName != null ? exchangeName.hashCode() : 0;
-        output += baseCurrency != null ? baseCurrency.hashCode() : 0;
-        output += counterCurrency != null ? counterCurrency.hashCode() : 0;
-        output += lastPrice != null ? lastPrice.hashCode() : 0;
-        output += bidPrice != null ? bidPrice.hashCode() : 0;
-        output += askPrice != null ? askPrice.hashCode() : 0;
-        output += highPrice != null ? highPrice.hashCode() : 0;
-        output += lowPrice != null ? lowPrice.hashCode() : 0;
-        output += volume != null ? volume.hashCode() : 0;
-        output += timestamp != null ? timestamp.hashCode() : 0;
+        output += (exchangeName != null ? exchangeName.hashCode() : 0) * 2;
+        output += (baseCurrency != null ? baseCurrency.hashCode() : 0) * 3;
+        output += (counterCurrency != null ? counterCurrency.hashCode() : 0) * 5;
+        output += (lastPrice != null ? lastPrice.hashCode() : 0) * 7;
+        output += (bidPrice != null ? bidPrice.hashCode() : 0) * 11;
+        output += (askPrice != null ? askPrice.hashCode() : 0) * 13;
+        output += (highPrice != null ? highPrice.hashCode() : 0) * 17;
+        output += (lowPrice != null ? lowPrice.hashCode() : 0) * 19;
+        output += (volume != null ? volume.hashCode() : 0) * 23;
+        output += (timestamp != null ? timestamp.hashCode() : 0) * 29;
         return output;
     }
 
@@ -157,6 +157,7 @@ public class MarketData implements Parcelable
          counterCurrency = in.readString();
 
          String temp;
+         long longtemps;
 
          temp = in.readString();
          lastPrice = temp != null ? new BigDecimal(temp) : null;
@@ -172,6 +173,7 @@ public class MarketData implements Parcelable
          temp = in.readString();
          volume = temp != null ? new BigDecimal(temp) : null;
 
-         timestamp = new Date(in.readLong());
+         longtemps = in.readLong();
+         timestamp = longtemps != 0 ? new Date(longtemps) : null;
      }
 }
