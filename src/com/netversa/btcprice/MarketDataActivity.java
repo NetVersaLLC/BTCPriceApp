@@ -106,6 +106,7 @@ public class MarketDataActivity extends BaseActivity
             if(expectResultsBy == 0)
             {
                 displayMarketData();
+                displayLastTrades();
             }
             // if a fetch is underway, display refresh indicators or trigger
             // timeout as necessary
@@ -141,7 +142,8 @@ public class MarketDataActivity extends BaseActivity
         initFetch(true);
     }
 
-    /** Tell the FetchService to get market data and hook into its response.
+    /** Tell the FetchService to get market data and candlestick info and hook
+     * into its responses.
      * This method is only called by startFetch and resumeFetch.
      * @param resuming a fetch is already underway so don't modify any state
      */
@@ -153,10 +155,17 @@ public class MarketDataActivity extends BaseActivity
         }
         displayFetchIndicators();
 
-        FetchService.requestMarket(this, marketDataReceiver,
-                prefs.getString("def_exchange", Defaults.DEF_EXCHANGE),
-                prefs.getString("def_base", Defaults.DEF_BASE),
-                prefs.getString("def_counter", Defaults.DEF_COUNTER));
+        String exchangeName =
+            prefs.getString("def_exchange", Defaults.DEF_EXCHANGE);
+        String baseCurrency = prefs.getString("def_base", Defaults.DEF_BASE);
+        String counterCurrency =
+            prefs.getString("def_counter", Defaults.DEF_COUNTER);
+
+        FetchService.requestMarket(this, marketDataReceiver, exchangeName,
+                baseCurrency, counterCurrency);
+
+        FetchService.requestTrades(this, lastTradesReceiver, exchangeName,
+                baseCurrency, counterCurrency);
 
         if(!resuming)
         {
