@@ -272,8 +272,17 @@ public class MarketDataActivity extends BaseActivity
         // if the fetch was successful, the cached data will be the freshest,
         // if not, then reverting to the stale cached data if available is
         // better than remaining blank
-        if(cachedMarketData != null)
+        if(cachedLastTrades != null)
         {
+            StockSeries series = (StockSeries)
+                chartView.findSeriesByName("candlestick-series-price");
+            StockPoint point = new StockPoint();
+            point.setValues(2.0f,4.0f,1.0f,3.0f);
+            series.getPoints().add(point);
+            point = new StockPoint();
+            point.setValues(3.0f,1.0f,4.0f,2.0f);
+            series.getPoints().add(point);
+            chartView.invalidate();
         }
     }
 
@@ -316,7 +325,7 @@ public class MarketDataActivity extends BaseActivity
         // isn't the default
         chartView.setClearColor(Color.TRANSPARENT);
         Area area = new Area();
-        area.setName("candlesticks");
+        area.setName("candlestick-area");
         area.setTitle("");
 
         area.getLeftAxis().setVisible(false);
@@ -332,7 +341,7 @@ public class MarketDataActivity extends BaseActivity
 
         StockSeries series = new StockSeries();
         series.getAppearance().setTextColor(Color.BLACK);
-        series.setName("price");
+        series.setName("candlestick-series-price");
         // upward candles
         series.getRiseAppearance().setPrimaryFillColor(
                 getResources().getColor(R.color.increase));
@@ -346,12 +355,6 @@ public class MarketDataActivity extends BaseActivity
                 getResources().getColor(R.color.decrease));
         series.getFallAppearance().setGradient(Appearance.Gradient.NONE);
         area.getSeries().add(series);
-        StockPoint point = new StockPoint();
-        point.setValues(2.0f,4.0f,1.0f,3.0f);
-        series.getPoints().add(point);
-        point = new StockPoint();
-        point.setValues(3.0f,1.0f,4.0f,2.0f);
-        series.getPoints().add(point);
     }
 
     @Override

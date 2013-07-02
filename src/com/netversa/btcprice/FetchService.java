@@ -263,7 +263,13 @@ public class FetchService extends Service
         }
 
         Transaction.List result = new Transaction.List();
-        for(Trade ee : trades.getTrades())
+        List<Trade> rawTrades = trades.getTrades();
+        if(rawTrades.size() > 1000)
+        {
+            rawTrades = rawTrades.subList(rawTrades.size() - 1000,
+                    rawTrades.size());
+        }
+        for(Trade ee : rawTrades)
         {
             String type = ee.getType() == Order.OrderType.BID ?
                 Transaction.BID : Transaction.ASK;
