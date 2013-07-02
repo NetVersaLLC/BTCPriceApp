@@ -3,7 +3,6 @@
  */
 package com.netversa.btcprice;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +17,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.IBinder;
+import android.os.Parcelable;
 import android.os.PatternMatcher;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
@@ -262,7 +262,7 @@ public class FetchService extends Service
             return output;
         }
 
-        ArrayList<Transaction> result = new ArrayList<Transaction>();
+        Transaction.List result = new Transaction.List();
         for(Trade ee : trades.getTrades())
         {
             String type = ee.getType() == Order.OrderType.BID ?
@@ -271,7 +271,7 @@ public class FetchService extends Service
                         ee.getTradableIdentifier(), ee.getTransactionCurrency(),
                         ee.getPrice().getAmount(), ee.getTimestamp()));
         }
-        output.putParcelableArrayListExtra(EXTRA_LAST_TRADES, result);
+        output.putExtra(EXTRA_LAST_TRADES, (Parcelable) result);
 
         return output;
     }

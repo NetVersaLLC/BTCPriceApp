@@ -30,6 +30,8 @@ public class MarketDataActivity extends BaseActivity
 {
     protected MarketData marketData;
     protected MarketData cachedMarketData;
+    protected Transaction.List lastTrades;
+    protected Transaction.List cachedLastTrades;
     protected String errorString;
     // by when should we be hearing back from FetchService?
     protected long expectResultsBy;
@@ -425,6 +427,16 @@ public class MarketDataActivity extends BaseActivity
             // TODO double-check data URI
             errorString =
                 intent.getStringExtra(FetchService.EXTRA_ERROR_STRING);
+            lastTrades = (Transaction.List)
+                intent.getParcelableExtra(FetchService.EXTRA_LAST_TRADES);
+            if(lastTrades != null)
+            {
+                cachedLastTrades = lastTrades;
+            }
+            if(lastTrades == null && errorString == null)
+            {
+                //errorString = getString(R.string.fetch_error_generic);
+            }
 
             completeLastTradesFetch();
         }
