@@ -66,7 +66,7 @@ public class MarketDataActivityTest
                 expectResultsBy, activity.expectResultsBy);
     }
 
-    public void testDataDisplay() throws Throwable
+    public void testMarketDataDisplay() throws Throwable
     {
         startActivity(new Intent(), null, null);
         activity = getActivity();
@@ -78,7 +78,7 @@ public class MarketDataActivityTest
 
         runTestOnUiThread(new Runnable() {
             public void run() {
-                activity.displayData();
+                activity.displayMarketData();
             }
         });
 

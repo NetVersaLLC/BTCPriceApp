@@ -37,6 +37,7 @@ public class MarketDataActivity extends BaseActivity
     protected Runnable timeout;
 
     protected BroadcastReceiver marketDataReceiver;
+    protected BroadcastReceiver lastTradesReceiver;
     protected Handler handler;
 
     // views
@@ -60,7 +61,7 @@ public class MarketDataActivity extends BaseActivity
             public void run() {
                 errorString = getString(R.string.fetch_error_timed_out);
                 marketData = null;
-                completeFetch();
+                completeMarketDataFetch();
             }
         };
 
@@ -79,6 +80,7 @@ public class MarketDataActivity extends BaseActivity
         // setup data
 
         marketDataReceiver = new MarketDataReceiver();
+        lastTradesReceiver = new LastTradesReceiver();
 
         if(savedInstanceState != null)
         {
@@ -103,7 +105,7 @@ public class MarketDataActivity extends BaseActivity
             // otherwise if a fetch isn't underway display the current data
             if(expectResultsBy == 0)
             {
-                displayData();
+                displayMarketData();
             }
             // if a fetch is underway, display refresh indicators or trigger
             // timeout as necessary
@@ -178,9 +180,9 @@ public class MarketDataActivity extends BaseActivity
         volumeView.setText(R.string.volume_dummy);
     }
 
-    /** Clean up after a refresh and display content.
+    /** Clean up after a market data refresh and display content.
      */
-    protected void completeFetch()
+    protected void completeMarketDataFetch()
     {
         expectResultsBy = 0;
         handler.removeCallbacks(timeout);
@@ -194,12 +196,29 @@ public class MarketDataActivity extends BaseActivity
             // nor a way to check if a receiver is registered.
         }
 
-        displayData();
+        displayMarketData();
     }
 
-    /** Populate views with instance data.
+    /** Clean up after a candlestick chart refresh and display content.
      */
-    protected void displayData()
+    protected void completeLastTradesFetch()
+    {
+        try
+        {
+            unregisterReceiver(lastTradesReceiver);
+        }
+        catch(IllegalArgumentException e)
+        {
+            // evidently Android doesn't have a way to unregister if necessary,
+            // nor a way to check if a receiver is registered.
+        }
+
+        displayLastTrades();
+    }
+
+    /** Populate views with instance market data.
+     */
+    protected void displayMarketData()
     {
         if(errorString != null)
         {
@@ -228,6 +247,23 @@ public class MarketDataActivity extends BaseActivity
         }
 
         updateStaleness();
+    }
+
+    /** Populate views with instance candlestick data.
+     */
+    protected void displayLastTrades()
+    {
+        if(errorString != null)
+        {
+            showError(errorString);
+        }
+
+        // if the fetch was successful, the cached data will be the freshest,
+        // if not, then reverting to the stale cached data if available is
+        // better than remaining blank
+        if(cachedMarketData != null)
+        {
+        }
     }
 
     protected void updateStaleness()
@@ -364,7 +400,24 @@ public class MarketDataActivity extends BaseActivity
             {
                 errorString = getString(R.string.fetch_error_generic);
             }
-            completeFetch();
+            completeMarketDataFetch();
+        }
+    }
+
+    protected class LastTradesReceiver extends BroadcastReceiver
+    {
+        public void onReceive(Context context, Intent intent)
+        {
+            if(!FetchService.ACTION_RESPONSE.equals(intent.getAction()) ||
+                        intent.getData() == null)
+            {
+                return;
+            }
+            // TODO double-check data URI
+            errorString =
+                intent.getStringExtra(FetchService.EXTRA_ERROR_STRING);
+
+            completeLastTradesFetch();
         }
     }
 }
