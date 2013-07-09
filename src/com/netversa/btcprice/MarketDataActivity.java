@@ -3,6 +3,8 @@
  */
 package com.netversa.btcprice;
 
+import java.util.List;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -274,14 +276,31 @@ public class MarketDataActivity extends BaseActivity
         // better than remaining blank
         if(cachedLastTrades != null)
         {
+            int intervals = prefs.getInt("trades_intervals",
+                    Defaults.TRADES_INTERVALS);
+            long tradesWindow = prefs.getLong("trades_window",
+                    Defaults.TRADES_WINDOW);
+            long now = System.currentTimeMillis() / 1000;
+
+            long start = now - tradesWindow;
+            long end = now;
+
+            List<Candlestick> candlesticks =
+                TransactionAnalysis.toCandlesticks(cachedLastTrades, start, end,
+                        intervals);
+
             StockSeries series = (StockSeries)
                 chartView.findSeriesByName("candlestick-series-price");
-            StockPoint point = new StockPoint();
-            point.setValues(2.0f,4.0f,1.0f,3.0f);
-            series.getPoints().add(point);
-            point = new StockPoint();
-            point.setValues(3.0f,1.0f,4.0f,2.0f);
-            series.getPoints().add(point);
+
+            for(Candlestick ee : candlesticks)
+            {
+                System.out.println("add point");
+                StockPoint point = new StockPoint();
+                point.setValues(ee.open.floatValue(), ee.high.floatValue(),
+                        ee.low.floatValue() , ee.close.floatValue());
+                series.getPoints().add(point);
+            }
+
             chartView.invalidate();
         }
     }
