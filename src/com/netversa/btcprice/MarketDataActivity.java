@@ -167,7 +167,7 @@ public class MarketDataActivity extends BaseActivity
                 baseCurrency, counterCurrency);
 
         FetchService.requestTrades(this, lastTradesReceiver, exchangeName,
-                baseCurrency, counterCurrency);
+                baseCurrency, counterCurrency, 0);
 
         if(!resuming)
         {
