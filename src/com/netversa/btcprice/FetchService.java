@@ -255,6 +255,18 @@ public class FetchService extends Service
     protected Intent fetchLastTrades(Intent output, String exchangeName,
             String baseCurrency, String counterCurrency, long sinceTimestamp)
     {
+        if(sinceTimestamp < 1)
+        {
+            long tsDelta = prefs.getLong("default_trades_window",
+                    Defaults.DEFAULT_TRADES_WINDOW);
+
+            sinceTimestamp = (System.currentTimeMillis() / 1000) - tsDelta;
+        }
+        // pad sinceTimestamp to conform to Mt. Gox's transaction ID format.
+        // Gox transaction IDs are derived from the concatenation of the
+        // timestamp and six digits of non-temporal id
+        sinceTimestamp *= 1000000;
+
         // TODO select exchange based on URI
         Trades trades;
         try
@@ -263,7 +275,7 @@ public class FetchService extends Service
             PollingMarketDataService exchangeData =
                 exchange.getPollingMarketDataService();
             trades = exchangeData.getTrades(baseCurrency,
-                    counterCurrency);
+                    counterCurrency, sinceTimestamp);
         }
         // lazy catch-all with pass-through to user
         catch(Throwable e)

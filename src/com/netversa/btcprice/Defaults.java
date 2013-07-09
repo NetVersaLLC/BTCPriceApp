@@ -24,4 +24,7 @@ public class Defaults
     // service frequencies
     public static final long _FETCH_INTERVAL = 1000l * 60l * 60l;
     public static final boolean _FETCH_ENABLED = false;
+
+    // 1 day in seconds
+    public static final long DEFAULT_TRADES_WINDOW = 60l * 60l* 24l;
 }
