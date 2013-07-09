@@ -257,8 +257,8 @@ public class FetchService extends Service
     {
         if(sinceTimestamp < 1)
         {
-            long tsDelta = prefs.getLong("default_trades_window",
-                    Defaults.DEFAULT_TRADES_WINDOW);
+            long tsDelta = prefs.getLong("trades_window",
+                    Defaults.TRADES_WINDOW);
 
             sinceTimestamp = (System.currentTimeMillis() / 1000) - tsDelta;
         }

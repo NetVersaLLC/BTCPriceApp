@@ -26,5 +26,5 @@ public class Defaults
     public static final boolean _FETCH_ENABLED = false;
 
     // 1 day in seconds
-    public static final long DEFAULT_TRADES_WINDOW = 60l * 60l* 24l;
+    public static final long TRADES_WINDOW = 60l * 60l* 24l;
 }
