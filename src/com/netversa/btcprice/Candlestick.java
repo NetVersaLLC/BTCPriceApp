@@ -3,8 +3,6 @@
  */
 package com.netversa.btcprice;
 
-import java.math.BigDecimal;
-
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -13,13 +11,13 @@ import android.os.Parcelable;
  */
 public class Candlestick implements Parcelable
 {
-    public final BigDecimal open;
-    public final BigDecimal close;
-    public final BigDecimal high;
-    public final BigDecimal low;
+    public final double open;
+    public final double close;
+    public final double high;
+    public final double low;
 
-    public Candlestick(BigDecimal open_, BigDecimal close_, BigDecimal high_,
-            BigDecimal low_)
+    public Candlestick(double open_, double close_, double high_,
+            double low_)
     {
         open = open_;
         close = close_;
@@ -77,10 +75,10 @@ public class Candlestick implements Parcelable
     public int hashCode()
     {
         int output = 0;
-        output += (open != null ? open.hashCode() : 0) * 2;
-        output += (close != null ? close.hashCode() : 0) * 3;
-        output += (high != null ? high.hashCode() : 0) * 5;
-        output += (low != null ? low.hashCode() : 0) * 7;
+        output += Double.valueOf(open).hashCode() * 2;
+        output += Double.valueOf(close).hashCode() * 3;
+        output += Double.valueOf(high).hashCode() * 5;
+        output += Double.valueOf(low).hashCode() * 7;
         return output;
     }
 
@@ -93,10 +91,10 @@ public class Candlestick implements Parcelable
     @Override
     public void writeToParcel(Parcel out, int flags)
     {
-        out.writeString(open != null ? open.toString() : null);
-        out.writeString(close != null ? close.toString() : null);
-        out.writeString(high != null ? high.toString() : null);
-        out.writeString(low != null ? low.toString() : null);
+        out.writeDouble(open);
+        out.writeDouble(close);
+        out.writeDouble(high);
+        out.writeDouble(low);
     }
 
     public static final Parcelable.Creator<Candlestick> CREATOR
@@ -110,16 +108,11 @@ public class Candlestick implements Parcelable
          }
      };
      
-     private Candlestick(Parcel in) {
-         String temp;
-
-         temp = in.readString();
-         open = temp != null ? new BigDecimal(temp) : null;
-         temp = in.readString();
-         close = temp != null ? new BigDecimal(temp) : null;
-         temp = in.readString();
-         high = temp != null ? new BigDecimal(temp) : null;
-         temp = in.readString();
-         low = temp != null ? new BigDecimal(temp) : null;
+     private Candlestick(Parcel in)
+     {
+         open = in.readDouble();
+         close = in.readDouble();
+         high = in.readDouble();
+         low = in.readDouble();
      }
 }
