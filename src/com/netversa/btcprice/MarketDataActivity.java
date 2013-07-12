@@ -294,11 +294,13 @@ public class MarketDataActivity extends BaseActivity
 
             for(Candlestick ee : candlesticks)
             {
-                System.out.println("add point");
-                StockPoint point = new StockPoint();
-                point.setValues(ee.open.floatValue(), ee.high.floatValue(),
-                        ee.low.floatValue() , ee.close.floatValue());
-                series.getPoints().add(point);
+                if(ee.open != Candlestick.NONE)
+                {
+                    StockPoint point = new StockPoint();
+                    point.setValues((float) ee.open, (float) ee.high,
+                            (float) ee.low, (float) ee.close);
+                    series.getPoints().add(point);
+                }
             }
 
             chartView.invalidate();
@@ -355,6 +357,7 @@ public class MarketDataActivity extends BaseActivity
         area.getRightAxis().setLinesCount(0);
         area.getBottomAxis().setLinesCount(0);
         area.getTopAxis().setLinesCount(0);
+        area.setAutoHeight(true);
 
         chartView.getAreas().add(area);
 

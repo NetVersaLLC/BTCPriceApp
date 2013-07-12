@@ -274,8 +274,7 @@ public class FetchService extends Service
             Exchange exchange = getExchange(exchangeName);
             PollingMarketDataService exchangeData =
                 exchange.getPollingMarketDataService();
-            trades = exchangeData.getTrades(baseCurrency,
-                    counterCurrency, sinceTimestamp);
+            trades = exchangeData.getTrades(baseCurrency, counterCurrency);
         }
         // lazy catch-all with pass-through to user
         catch(Throwable e)

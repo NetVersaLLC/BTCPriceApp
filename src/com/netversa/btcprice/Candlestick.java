@@ -11,6 +11,7 @@ import android.os.Parcelable;
  */
 public class Candlestick implements Parcelable
 {
+    public static final double NONE = -1.0;
     public final double open;
     public final double close;
     public final double high;
