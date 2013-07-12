@@ -3,6 +3,8 @@
  */
 package com.netversa.btcprice;
 
+import java.util.ArrayList;
+
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -115,5 +117,53 @@ public class Candlestick implements Parcelable
          close = in.readDouble();
          high = in.readDouble();
          low = in.readDouble();
+     }
+
+     public static class List
+             extends ArrayList<Candlestick> implements Parcelable
+     {
+         public List()
+         {
+             super();
+         }
+
+        @Override
+        public int describeContents()
+        {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel out, int flags)
+        {
+            out.writeInt(size());
+            for(Candlestick ee : this)
+            {
+                out.writeParcelable(ee, ee.describeContents());
+            }
+        }
+
+        public static final Parcelable.Creator<List> CREATOR
+                 = new Parcelable.Creator<List>() {
+             public List createFromParcel(Parcel in) {
+                 return new List(in);
+             }
+
+             public List[] newArray(int size) {
+                 return new List[size];
+             }
+         };
+
+         private List(Parcel in) {
+             super();
+
+             int size = in.readInt();
+
+             for(int ii = 0; ii < size; ii++)
+             {
+                 add((Candlestick) 
+                         in.readParcelable(Candlestick.class.getClassLoader()));
+             }
+         }
      }
 }

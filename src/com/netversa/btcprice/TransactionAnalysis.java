@@ -4,15 +4,14 @@
 package com.netversa.btcprice;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 
 public class TransactionAnalysis
 {
-    public static List<Candlestick> toCandlesticks(Transaction.List txs,
+    public static Candlestick.List toCandlesticks(List<Transaction> txs,
             long startTimestamp, long endTimestamp, int intervals)
     {
-        List<Candlestick> result = new ArrayList<Candlestick>();
+        Candlestick.List result = new Candlestick.List();
 
         if(startTimestamp > endTimestamp)
         {

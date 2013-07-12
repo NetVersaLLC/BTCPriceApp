@@ -32,8 +32,8 @@ public class MarketDataActivity extends BaseActivity
 {
     protected MarketData marketData;
     protected MarketData cachedMarketData;
-    protected Transaction.List lastTrades;
-    protected Transaction.List cachedLastTrades;
+    protected List<Transaction> lastTrades;
+    protected List<Transaction> cachedLastTrades;
     protected String errorString;
     // by when should we be hearing back from FetchService?
     protected long expectResultsBy;

@@ -53,6 +53,8 @@ public class FetchService extends Service
         "com.netversa.btcprice.EXTRA_MARKET_DATA";
     public static final String EXTRA_LAST_TRADES =
         "com.netversa.btcprice.EXTRA_LAST_TRADES";
+    public static final String EXTRA_PRICE_HISTORY =
+        "com.netversa.btcprice.EXTRA_PRICE_HISTORY";
     public static final String EXTRA_ERROR_STRING =
         "com.netversa.btcprice.EXTRA_ERROR_STRING";
     public static final String EXTRA_SCHED_FETCH =
@@ -61,10 +63,13 @@ public class FetchService extends Service
     public static final String DATA_SCHEME = "data";
     public static final String MARKET_DATA_ACTION = "market";
     public static final String LAST_TRADES_ACTION = "trades";
+    public static final String PRICE_HISTORY_ACTION = "history";
     public static final String MARKET_DATA_URI_FORMAT = DATA_SCHEME +
         "://%s/" + MARKET_DATA_ACTION + "/%s/%s";
     public static final String LAST_TRADES_URI_FORMAT = DATA_SCHEME +
         "://%s/" + LAST_TRADES_ACTION + "/%s/%s/%d";
+    public static final String PRICE_HISTORY_URI_FORMAT = DATA_SCHEME +
+        "://%s/" + PRICE_HISTORY_ACTION + "/%s/%s/%d";
 
     protected ActiveTargetSet activeTargets;
     // exchanges are probably cached by the ExchangeFactory singleton, but
@@ -198,7 +203,43 @@ public class FetchService extends Service
             }
 
             fetchLastTrades(resultIntent, exchangeName, baseCurrency,
-                    counterCurrency, sinceTimestamp);
+                    counterCurrency, sinceTimestamp, true);
+        }
+        // price history (candlesticks)
+        else if(PRICE_HISTORY_ACTION.equalsIgnoreCase(fetchAction))
+        {
+            if(arguments.size() != 3)
+            {
+                String format =
+                    getString(R.string.fetch_error_wrong_arity_format);
+                String errorString = String.format(format, fetchAction, 2);
+                resultIntent.putExtra(EXTRA_ERROR_STRING, errorString);
+                sendBroadcast(resultIntent);
+                finalizeFetch(target);
+                return;
+            }
+            String baseCurrency = arguments.get(1);
+            String counterCurrency = arguments.get(2);
+            String spanString = arguments.get(3);
+            long historySpan = 0;
+            try
+            {
+                historySpan = Long.parseLong(spanString);
+            }
+            catch(NumberFormatException e)
+            {
+                String format =
+                    getString(R.string.fetch_error_invalid_argument_format);
+                String errorString = String.format(format, spanString,
+                        "historySpan");
+                resultIntent.putExtra(EXTRA_ERROR_STRING, errorString);
+                sendBroadcast(resultIntent);
+                finalizeFetch(target);
+                return;
+            }
+
+            fetchPriceHistory(resultIntent, exchangeName, baseCurrency,
+                    counterCurrency, historySpan);
         }
         // unknown action
         else
@@ -253,7 +294,8 @@ public class FetchService extends Service
     }
 
     protected Intent fetchLastTrades(Intent output, String exchangeName,
-            String baseCurrency, String counterCurrency, long sinceTimestamp)
+            String baseCurrency, String counterCurrency, long sinceTimestamp,
+            boolean memConstrained)
     {
         if(sinceTimestamp < 1)
         {
@@ -292,7 +334,7 @@ public class FetchService extends Service
 
         Transaction.List result = new Transaction.List();
         List<Trade> rawTrades = trades.getTrades();
-        if(rawTrades.size() > 1000)
+        if(memConstrained && rawTrades.size() > 1000)
         {
             rawTrades = rawTrades.subList(rawTrades.size() - 1000,
                     rawTrades.size());
@@ -306,6 +348,29 @@ public class FetchService extends Service
                         ee.getPrice().getAmount(), ee.getTimestamp()));
         }
         output.putExtra(EXTRA_LAST_TRADES, (Parcelable) result);
+
+        return output;
+    }
+
+    protected Intent fetchPriceHistory(Intent output, String exchangeName,
+            String baseCurrency, String counterCurrency, long historySpan)
+    {
+        fetchLastTrades(output, exchangeName, baseCurrency, counterCurrency, 0,
+                false);
+        Transaction.List txs =
+            (Transaction.List) output.getParcelableExtra(EXTRA_LAST_TRADES);
+        if(txs == null)
+        {
+            return output;
+        }
+        output.removeExtra(EXTRA_LAST_TRADES);
+
+        long now = System.currentTimeMillis();
+
+        Candlestick.List result =
+            TransactionAnalysis.toCandlesticks(txs, now - historySpan, now, 20);
+
+        output.putExtra(EXTRA_PRICE_HISTORY, (Parcelable) result);
 
         return output;
     }
