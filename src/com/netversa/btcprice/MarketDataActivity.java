@@ -3,6 +3,8 @@
  */
 package com.netversa.btcprice;
 
+import java.util.List;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -30,13 +32,16 @@ public class MarketDataActivity extends BaseActivity
 {
     protected MarketData marketData;
     protected MarketData cachedMarketData;
+    protected Candlestick.List priceHistory;
+    protected Candlestick.List cachedPriceHistory;
     protected String errorString;
     // by when should we be hearing back from FetchService?
     protected long expectResultsBy;
     // TODO recreate timeout from bundle
     protected Runnable timeout;
 
-    protected BroadcastReceiver responseReceiver;
+    protected BroadcastReceiver marketDataReceiver;
+    protected BroadcastReceiver priceHistoryReceiver;
     protected Handler handler;
 
     // views
@@ -60,7 +65,7 @@ public class MarketDataActivity extends BaseActivity
             public void run() {
                 errorString = getString(R.string.fetch_error_timed_out);
                 marketData = null;
-                completeFetch();
+                completeMarketDataFetch();
             }
         };
 
@@ -78,7 +83,8 @@ public class MarketDataActivity extends BaseActivity
 
         // setup data
 
-        responseReceiver = new FetchReceiver();
+        marketDataReceiver = new MarketDataReceiver();
+        priceHistoryReceiver = new PriceHistoryReceiver();
 
         if(savedInstanceState != null)
         {
@@ -86,6 +92,10 @@ public class MarketDataActivity extends BaseActivity
                 savedInstanceState.getParcelable("marketData");
             cachedMarketData = (MarketData)
                 savedInstanceState.getParcelable("cachedMarketData");
+            priceHistory = (Candlestick.List)
+                savedInstanceState.getParcelable("priceHistory");
+            cachedPriceHistory = (Candlestick.List)
+                savedInstanceState.getParcelable("cachedPriceHistory");
             errorString = savedInstanceState.getString("errorString");
             expectResultsBy = savedInstanceState.getLong("expectResultsBy");
         }
@@ -103,7 +113,8 @@ public class MarketDataActivity extends BaseActivity
             // otherwise if a fetch isn't underway display the current data
             if(expectResultsBy == 0)
             {
-                displayData();
+                displayMarketData();
+                displayPriceHistory();
             }
             // if a fetch is underway, display refresh indicators or trigger
             // timeout as necessary
@@ -139,7 +150,8 @@ public class MarketDataActivity extends BaseActivity
         initFetch(true);
     }
 
-    /** Tell the FetchService to get market data and hook into its response.
+    /** Tell the FetchService to get market data and candlestick info and hook
+     * into its responses.
      * This method is only called by startFetch and resumeFetch.
      * @param resuming a fetch is already underway so don't modify any state
      */
@@ -151,10 +163,17 @@ public class MarketDataActivity extends BaseActivity
         }
         displayFetchIndicators();
 
-        FetchService.requestMarket(this, responseReceiver,
-                prefs.getString("def_exchange", Defaults.DEF_EXCHANGE),
-                prefs.getString("def_base", Defaults.DEF_BASE),
-                prefs.getString("def_counter", Defaults.DEF_COUNTER));
+        String exchangeName =
+            prefs.getString("def_exchange", Defaults.DEF_EXCHANGE);
+        String baseCurrency = prefs.getString("def_base", Defaults.DEF_BASE);
+        String counterCurrency =
+            prefs.getString("def_counter", Defaults.DEF_COUNTER);
+
+        FetchService.requestMarket(this, marketDataReceiver, exchangeName,
+                baseCurrency, counterCurrency);
+
+        FetchService.requestHistory(this, priceHistoryReceiver, exchangeName,
+                baseCurrency, counterCurrency, 0, 0);
 
         if(!resuming)
         {
@@ -178,15 +197,15 @@ public class MarketDataActivity extends BaseActivity
         volumeView.setText(R.string.volume_dummy);
     }
 
-    /** Clean up after a refresh and display content.
+    /** Clean up after a market data refresh and display content.
      */
-    protected void completeFetch()
+    protected void completeMarketDataFetch()
     {
         expectResultsBy = 0;
         handler.removeCallbacks(timeout);
         try
         {
-            unregisterReceiver(responseReceiver);
+            unregisterReceiver(marketDataReceiver);
         }
         catch(IllegalArgumentException e)
         {
@@ -194,12 +213,29 @@ public class MarketDataActivity extends BaseActivity
             // nor a way to check if a receiver is registered.
         }
 
-        displayData();
+        displayMarketData();
     }
 
-    /** Populate views with instance data.
+    /** Clean up after a candlestick chart refresh and display content.
      */
-    protected void displayData()
+    protected void completePriceHistoryFetch()
+    {
+        try
+        {
+            unregisterReceiver(priceHistoryReceiver);
+        }
+        catch(IllegalArgumentException e)
+        {
+            // evidently Android doesn't have a way to unregister if necessary,
+            // nor a way to check if a receiver is registered.
+        }
+
+        displayPriceHistory();
+    }
+
+    /** Populate views with instance market data.
+     */
+    protected void displayMarketData()
     {
         if(errorString != null)
         {
@@ -228,6 +264,59 @@ public class MarketDataActivity extends BaseActivity
         }
 
         updateStaleness();
+    }
+
+    /** Populate views with instance candlestick data.
+     */
+    protected void displayPriceHistory()
+    {
+        if(errorString != null)
+        {
+            showError(errorString);
+        }
+
+        // if the fetch was successful, the cached data will be the freshest,
+        // if not, then reverting to the stale cached data if available is
+        // better than remaining blank
+        if(cachedPriceHistory != null)
+        {
+            StockSeries series = (StockSeries)
+                chartView.findSeriesByName("candlestick-series-price");
+
+            // find the mean opening price for dummy candlesticks.  Dummies are
+            // used when the data for a span is incomplete since stock-chart
+            // doesn't seem to have a way to insert blank candlestick spaces.
+            double sum = 0;
+            int count = 0;
+            for(Candlestick ee : cachedPriceHistory)
+            {
+                if(ee.open == Candlestick.NONE)
+                {
+                    continue;
+                }
+                sum += ee.open;
+                count++;
+            }
+            float dummyValue = (float) (sum / count);
+
+            for(Candlestick ee : cachedPriceHistory)
+            {
+                StockPoint point = new StockPoint();
+                if(ee.open != Candlestick.NONE)
+                {
+                    point.setValues((float) ee.open, (float) ee.high,
+                            (float) ee.low, (float) ee.close);
+                }
+                else
+                {
+                    point.setValues(dummyValue, dummyValue, dummyValue,
+                            dummyValue);
+                }
+                series.getPoints().add(point);
+            }
+
+            chartView.invalidate();
+        }
     }
 
     protected void updateStaleness()
@@ -269,7 +358,7 @@ public class MarketDataActivity extends BaseActivity
         // isn't the default
         chartView.setClearColor(Color.TRANSPARENT);
         Area area = new Area();
-        area.setName("candlesticks");
+        area.setName("candlestick-area");
         area.setTitle("");
 
         area.getLeftAxis().setVisible(false);
@@ -280,12 +369,13 @@ public class MarketDataActivity extends BaseActivity
         area.getRightAxis().setLinesCount(0);
         area.getBottomAxis().setLinesCount(0);
         area.getTopAxis().setLinesCount(0);
+        area.setAutoHeight(true);
 
         chartView.getAreas().add(area);
 
         StockSeries series = new StockSeries();
         series.getAppearance().setTextColor(Color.BLACK);
-        series.setName("price");
+        series.setName("candlestick-series-price");
         // upward candles
         series.getRiseAppearance().setPrimaryFillColor(
                 getResources().getColor(R.color.increase));
@@ -299,12 +389,6 @@ public class MarketDataActivity extends BaseActivity
                 getResources().getColor(R.color.decrease));
         series.getFallAppearance().setGradient(Appearance.Gradient.NONE);
         area.getSeries().add(series);
-        StockPoint point = new StockPoint();
-        point.setValues(2.0f,4.0f,1.0f,3.0f);
-        series.getPoints().add(point);
-        point = new StockPoint();
-        point.setValues(3.0f,1.0f,4.0f,2.0f);
-        series.getPoints().add(point);
     }
 
     @Override
@@ -314,6 +398,9 @@ public class MarketDataActivity extends BaseActivity
 
         savedInstanceState.putParcelable("marketData", marketData);
         savedInstanceState.putParcelable("cachedMarketData", cachedMarketData);
+        savedInstanceState.putParcelable("priceHistory", priceHistory);
+        savedInstanceState.putParcelable("cachedPriceHistory",
+                cachedPriceHistory);
         savedInstanceState.putString("errorString", errorString);
         savedInstanceState.putLong("expectResultsBy", expectResultsBy);
     }
@@ -342,7 +429,7 @@ public class MarketDataActivity extends BaseActivity
         return true;
     }
 
-    protected class FetchReceiver extends BroadcastReceiver
+    protected class MarketDataReceiver extends BroadcastReceiver
     {
         public void onReceive(Context context, Intent intent)
         {
@@ -364,7 +451,34 @@ public class MarketDataActivity extends BaseActivity
             {
                 errorString = getString(R.string.fetch_error_generic);
             }
-            completeFetch();
+            completeMarketDataFetch();
+        }
+    }
+
+    protected class PriceHistoryReceiver extends BroadcastReceiver
+    {
+        public void onReceive(Context context, Intent intent)
+        {
+            if(!FetchService.ACTION_RESPONSE.equals(intent.getAction()) ||
+                        intent.getData() == null)
+            {
+                return;
+            }
+            // TODO double-check data URI
+            errorString =
+                intent.getStringExtra(FetchService.EXTRA_ERROR_STRING);
+            priceHistory = (Candlestick.List)
+                intent.getParcelableExtra(FetchService.EXTRA_PRICE_HISTORY);
+            if(priceHistory != null)
+            {
+                cachedPriceHistory = priceHistory;
+            }
+            if(priceHistory == null && errorString == null)
+            {
+                //errorString = getString(R.string.fetch_error_generic);
+            }
+
+            completePriceHistoryFetch();
         }
     }
 }

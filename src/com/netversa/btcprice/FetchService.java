@@ -3,7 +3,6 @@
  */
 package com.netversa.btcprice;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +17,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.IBinder;
+import android.os.Parcelable;
 import android.os.PatternMatcher;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
@@ -53,6 +53,8 @@ public class FetchService extends Service
         "com.netversa.btcprice.EXTRA_MARKET_DATA";
     public static final String EXTRA_LAST_TRADES =
         "com.netversa.btcprice.EXTRA_LAST_TRADES";
+    public static final String EXTRA_PRICE_HISTORY =
+        "com.netversa.btcprice.EXTRA_PRICE_HISTORY";
     public static final String EXTRA_ERROR_STRING =
         "com.netversa.btcprice.EXTRA_ERROR_STRING";
     public static final String EXTRA_SCHED_FETCH =
@@ -61,10 +63,13 @@ public class FetchService extends Service
     public static final String DATA_SCHEME = "data";
     public static final String MARKET_DATA_ACTION = "market";
     public static final String LAST_TRADES_ACTION = "trades";
+    public static final String PRICE_HISTORY_ACTION = "history";
     public static final String MARKET_DATA_URI_FORMAT = DATA_SCHEME +
         "://%s/" + MARKET_DATA_ACTION + "/%s/%s";
     public static final String LAST_TRADES_URI_FORMAT = DATA_SCHEME +
-        "://%s/" + LAST_TRADES_ACTION + "/%s/%s";
+        "://%s/" + LAST_TRADES_ACTION + "/%s/%s/%d";
+    public static final String PRICE_HISTORY_URI_FORMAT = DATA_SCHEME +
+        "://%s/" + PRICE_HISTORY_ACTION + "/%s/%s/%d/%d";
 
     protected ActiveTargetSet activeTargets;
     // exchanges are probably cached by the ExchangeFactory singleton, but
@@ -167,11 +172,11 @@ public class FetchService extends Service
         // last trades
         else if(LAST_TRADES_ACTION.equalsIgnoreCase(fetchAction))
         {
-            if(arguments.size() != 3)
+            if(arguments.size() != 4)
             {
                 String format =
                     getString(R.string.fetch_error_wrong_arity_format);
-                String errorString = String.format(format, fetchAction, 2);
+                String errorString = String.format(format, fetchAction, 3);
                 resultIntent.putExtra(EXTRA_ERROR_STRING, errorString);
                 sendBroadcast(resultIntent);
                 finalizeFetch(target);
@@ -179,9 +184,79 @@ public class FetchService extends Service
             }
             String baseCurrency = arguments.get(1);
             String counterCurrency = arguments.get(2);
+            String sinceString = arguments.get(3);
+            long sinceTimestamp = 0;
+            try
+            {
+                sinceTimestamp = Long.parseLong(sinceString);
+            }
+            catch(NumberFormatException e)
+            {
+                String format =
+                    getString(R.string.fetch_error_invalid_argument_format);
+                String errorString = String.format(format, sinceString,
+                        "sinceTimestamp");
+                resultIntent.putExtra(EXTRA_ERROR_STRING, errorString);
+                sendBroadcast(resultIntent);
+                finalizeFetch(target);
+                return;
+            }
 
             fetchLastTrades(resultIntent, exchangeName, baseCurrency,
-                    counterCurrency);
+                    counterCurrency, sinceTimestamp, true);
+        }
+        // price history (candlesticks)
+        else if(PRICE_HISTORY_ACTION.equalsIgnoreCase(fetchAction))
+        {
+            if(arguments.size() != 5)
+            {
+                String format =
+                    getString(R.string.fetch_error_wrong_arity_format);
+                String errorString = String.format(format, fetchAction, 4);
+                resultIntent.putExtra(EXTRA_ERROR_STRING, errorString);
+                sendBroadcast(resultIntent);
+                finalizeFetch(target);
+                return;
+            }
+            String baseCurrency = arguments.get(1);
+            String counterCurrency = arguments.get(2);
+            String spanString = arguments.get(3);
+            String countString = arguments.get(4);
+            long historySpan = 0;
+            int candlestickCount = 0;
+            try
+            {
+                historySpan = Long.parseLong(spanString);
+            }
+            catch(NumberFormatException e)
+            {
+                String format =
+                    getString(R.string.fetch_error_invalid_argument_format);
+                String errorString = String.format(format, spanString,
+                        "historySpan");
+                resultIntent.putExtra(EXTRA_ERROR_STRING, errorString);
+                sendBroadcast(resultIntent);
+                finalizeFetch(target);
+                return;
+            }
+            try
+            {
+                candlestickCount = Integer.parseInt(countString);
+            }
+            catch(NumberFormatException e)
+            {
+                String format =
+                    getString(R.string.fetch_error_invalid_argument_format);
+                String errorString = String.format(format, countString,
+                        "candlestickCount");
+                resultIntent.putExtra(EXTRA_ERROR_STRING, errorString);
+                sendBroadcast(resultIntent);
+                finalizeFetch(target);
+                return;
+            }
+
+            fetchPriceHistory(resultIntent, exchangeName, baseCurrency,
+                    counterCurrency, historySpan, candlestickCount);
         }
         // unknown action
         else
@@ -236,8 +311,21 @@ public class FetchService extends Service
     }
 
     protected Intent fetchLastTrades(Intent output, String exchangeName,
-            String baseCurrency, String counterCurrency)
+            String baseCurrency, String counterCurrency, long sinceTimestamp,
+            boolean memConstrained)
     {
+        if(sinceTimestamp < 1)
+        {
+            long tsDelta = prefs.getLong("trades_window",
+                    Defaults.TRADES_WINDOW);
+
+            sinceTimestamp = (System.currentTimeMillis() / 1000) - tsDelta;
+        }
+        // pad sinceTimestamp to conform to Mt. Gox's transaction ID format.
+        // Gox transaction IDs are derived from the concatenation of the
+        // timestamp and six digits of non-temporal id
+        sinceTimestamp *= 1000000;
+
         // TODO select exchange based on URI
         Trades trades;
         try
@@ -245,8 +333,7 @@ public class FetchService extends Service
             Exchange exchange = getExchange(exchangeName);
             PollingMarketDataService exchangeData =
                 exchange.getPollingMarketDataService();
-            trades = exchangeData.getTrades(baseCurrency,
-                    counterCurrency);
+            trades = exchangeData.getTrades(baseCurrency, counterCurrency);
         }
         // lazy catch-all with pass-through to user
         catch(Throwable e)
@@ -262,8 +349,14 @@ public class FetchService extends Service
             return output;
         }
 
-        ArrayList<Transaction> result = new ArrayList<Transaction>();
-        for(Trade ee : trades.getTrades())
+        Transaction.List result = new Transaction.List();
+        List<Trade> rawTrades = trades.getTrades();
+        if(memConstrained && rawTrades.size() > 1000)
+        {
+            rawTrades = rawTrades.subList(rawTrades.size() - 1000,
+                    rawTrades.size());
+        }
+        for(Trade ee : rawTrades)
         {
             String type = ee.getType() == Order.OrderType.BID ?
                 Transaction.BID : Transaction.ASK;
@@ -271,7 +364,42 @@ public class FetchService extends Service
                         ee.getTradableIdentifier(), ee.getTransactionCurrency(),
                         ee.getPrice().getAmount(), ee.getTimestamp()));
         }
-        output.putParcelableArrayListExtra(EXTRA_LAST_TRADES, result);
+        output.putExtra(EXTRA_LAST_TRADES, (Parcelable) result);
+
+        return output;
+    }
+
+    protected Intent fetchPriceHistory(Intent output, String exchangeName,
+            String baseCurrency, String counterCurrency, long historySpan,
+            int candlestickCount)
+    {
+        if(historySpan < 1)
+        {
+            historySpan = prefs.getLong("trades_window",
+                    Defaults.TRADES_WINDOW);
+        }
+        if(candlestickCount < 1)
+        {
+            candlestickCount = prefs.getInt("candlestick_count",
+                    Defaults.CANDLESTICK_COUNT);
+        }
+        fetchLastTrades(output, exchangeName, baseCurrency, counterCurrency, 0,
+                false);
+        Transaction.List txs =
+            (Transaction.List) output.getParcelableExtra(EXTRA_LAST_TRADES);
+        if(txs == null)
+        {
+            return output;
+        }
+        output.removeExtra(EXTRA_LAST_TRADES);
+
+        long now = System.currentTimeMillis() / 1000;
+
+        Candlestick.List result =
+            TransactionAnalysis.toCandlesticks(txs, now - historySpan, now,
+                    candlestickCount);
+
+        output.putExtra(EXTRA_PRICE_HISTORY, (Parcelable) result);
 
         return output;
     }
@@ -299,8 +427,8 @@ public class FetchService extends Service
     /** Helper function to produce a data URI to request market data for an
      * exchange and currency pair.
      */
-    public static Uri marketTarget(String exchange, String baseCurrency, String
-            counterCurrency)
+    public static Uri marketTarget(String exchange, String baseCurrency,
+            String counterCurrency)
     {
         return Uri.parse(String.format(MARKET_DATA_URI_FORMAT, exchange,
                     baseCurrency, counterCurrency));
@@ -309,11 +437,22 @@ public class FetchService extends Service
     /** Helper function to produce a data URI to request the last trades for an
      * exchange and currency pair.
      */
-    public static Uri tradesTarget(String exchange, String baseCurrency, String
-            counterCurrency)
+    public static Uri tradesTarget(String exchange, String baseCurrency,
+            String counterCurrency, long sinceTimestamp)
     {
         return Uri.parse(String.format(LAST_TRADES_URI_FORMAT, exchange,
-                    baseCurrency, counterCurrency));
+                    baseCurrency, counterCurrency, sinceTimestamp));
+    }
+
+    /** Helper function to produce a data URI to request the price history
+     * (candlesticks) for an exchange and currency pair.
+     */
+    public static Uri historyTarget(String exchange, String baseCurrency,
+            String counterCurrency, long historySpan, int candlestickCount)
+    {
+        return Uri.parse(String.format(PRICE_HISTORY_URI_FORMAT, exchange,
+                    baseCurrency, counterCurrency, historySpan,
+                    candlestickCount));
     }
 
     /** Helper function to send a market data fetch request to this service.
@@ -333,9 +472,24 @@ public class FetchService extends Service
      */
     public static ComponentName requestTrades(Context context,
             BroadcastReceiver receiver, String exchange, String baseCurrency,
-            String counterCurrency)
+            String counterCurrency, long sinceTimestamp)
     {
-        Uri target = tradesTarget(exchange, baseCurrency, counterCurrency);
+        Uri target = tradesTarget(exchange, baseCurrency, counterCurrency,
+                sinceTimestamp);
+
+        return sendRequest(context, target, receiver);
+    }
+
+    /** Helper function to send a price history (candlesticks) fetch request to
+     * this service.
+     *  @param receiver BroadcastReceiver that will receive result, or null
+     */
+    public static ComponentName requestHistory(Context context,
+            BroadcastReceiver receiver, String exchange, String baseCurrency,
+            String counterCurrency, long historySpan, int candlestickCount)
+    {
+        Uri target = historyTarget(exchange, baseCurrency, counterCurrency,
+                historySpan, candlestickCount);
 
         return sendRequest(context, target, receiver);
     }

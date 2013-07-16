@@ -12,7 +12,8 @@
     <string name="fetch_error_wrong_arity_format" formatted="false">action \'%s\' requires %d arguments</string>
     <string name="fetch_error_unknown_action_format" formatted="false">unknown action \'%s\'</string>
     <string name="fetch_error_unknown_exchange_format" formatted="false">unknown exchange \'%s\'</string>
-    <string name="fetch_error_timed_out" formatted="false">took too long</string>
+    <string name="fetch_error_timed_out">took too long</string>
+    <string name="fetch_error_invalid_argument_format" formatted="false">value \'%s\' of \'%s\' is invalid</string>
 
     <string name="menu_refresh">refresh</string>
 

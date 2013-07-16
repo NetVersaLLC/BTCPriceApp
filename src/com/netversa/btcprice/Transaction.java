@@ -4,6 +4,7 @@
 package com.netversa.btcprice;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 
 import android.os.Parcel;
@@ -142,5 +143,53 @@ public class Transaction implements Parcelable
 
          longtemps = in.readLong();
          timestamp = longtemps != 0 ? new Date(longtemps) : null;
+     }
+
+     public static class List
+             extends ArrayList<Transaction> implements Parcelable
+     {
+         public List()
+         {
+             super();
+         }
+
+        @Override
+        public int describeContents()
+        {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel out, int flags)
+        {
+            out.writeInt(size());
+            for(Transaction ee : this)
+            {
+                out.writeParcelable(ee, ee.describeContents());
+            }
+        }
+
+        public static final Parcelable.Creator<List> CREATOR
+                 = new Parcelable.Creator<List>() {
+             public List createFromParcel(Parcel in) {
+                 return new List(in);
+             }
+
+             public List[] newArray(int size) {
+                 return new List[size];
+             }
+         };
+
+         private List(Parcel in) {
+             super();
+
+             int size = in.readInt();
+
+             for(int ii = 0; ii < size; ii++)
+             {
+                 add((Transaction) 
+                         in.readParcelable(Transaction.class.getClassLoader()));
+             }
+         }
      }
 }
