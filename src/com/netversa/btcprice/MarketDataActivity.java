@@ -32,8 +32,8 @@ public class MarketDataActivity extends BaseActivity
 {
     protected MarketData marketData;
     protected MarketData cachedMarketData;
-    protected List<Transaction> lastTrades;
-    protected List<Transaction> cachedLastTrades;
+    protected List<Transaction> priceHistory;
+    protected List<Transaction> cachedPriceHistory;
     protected String errorString;
     // by when should we be hearing back from FetchService?
     protected long expectResultsBy;
@@ -41,7 +41,7 @@ public class MarketDataActivity extends BaseActivity
     protected Runnable timeout;
 
     protected BroadcastReceiver marketDataReceiver;
-    protected BroadcastReceiver lastTradesReceiver;
+    protected BroadcastReceiver priceHistoryReceiver;
     protected Handler handler;
 
     // views
@@ -84,7 +84,7 @@ public class MarketDataActivity extends BaseActivity
         // setup data
 
         marketDataReceiver = new MarketDataReceiver();
-        lastTradesReceiver = new LastTradesReceiver();
+        priceHistoryReceiver = new PriceHistoryReceiver();
 
         if(savedInstanceState != null)
         {
@@ -110,7 +110,7 @@ public class MarketDataActivity extends BaseActivity
             if(expectResultsBy == 0)
             {
                 displayMarketData();
-                displayLastTrades();
+                displayPriceHistory();
             }
             // if a fetch is underway, display refresh indicators or trigger
             // timeout as necessary
@@ -168,7 +168,7 @@ public class MarketDataActivity extends BaseActivity
         FetchService.requestMarket(this, marketDataReceiver, exchangeName,
                 baseCurrency, counterCurrency);
 
-        FetchService.requestTrades(this, lastTradesReceiver, exchangeName,
+        FetchService.requestTrades(this, priceHistoryReceiver, exchangeName,
                 baseCurrency, counterCurrency, 0);
 
         if(!resuming)
@@ -214,11 +214,11 @@ public class MarketDataActivity extends BaseActivity
 
     /** Clean up after a candlestick chart refresh and display content.
      */
-    protected void completeLastTradesFetch()
+    protected void completePriceHistoryFetch()
     {
         try
         {
-            unregisterReceiver(lastTradesReceiver);
+            unregisterReceiver(priceHistoryReceiver);
         }
         catch(IllegalArgumentException e)
         {
@@ -226,7 +226,7 @@ public class MarketDataActivity extends BaseActivity
             // nor a way to check if a receiver is registered.
         }
 
-        displayLastTrades();
+        displayPriceHistory();
     }
 
     /** Populate views with instance market data.
@@ -264,7 +264,7 @@ public class MarketDataActivity extends BaseActivity
 
     /** Populate views with instance candlestick data.
      */
-    protected void displayLastTrades()
+    protected void displayPriceHistory()
     {
         if(errorString != null)
         {
@@ -274,7 +274,7 @@ public class MarketDataActivity extends BaseActivity
         // if the fetch was successful, the cached data will be the freshest,
         // if not, then reverting to the stale cached data if available is
         // better than remaining blank
-        if(cachedLastTrades != null)
+        if(cachedPriceHistory != null)
         {
             int intervals = prefs.getInt("trades_intervals",
                     Defaults.TRADES_INTERVALS);
@@ -286,7 +286,7 @@ public class MarketDataActivity extends BaseActivity
             long end = now;
 
             List<Candlestick> candlesticks =
-                TransactionAnalysis.toCandlesticks(cachedLastTrades, start, end,
+                TransactionAnalysis.toCandlesticks(cachedPriceHistory, start, end,
                         intervals);
 
             StockSeries series = (StockSeries)
@@ -440,7 +440,7 @@ public class MarketDataActivity extends BaseActivity
         }
     }
 
-    protected class LastTradesReceiver extends BroadcastReceiver
+    protected class PriceHistoryReceiver extends BroadcastReceiver
     {
         public void onReceive(Context context, Intent intent)
         {
@@ -452,18 +452,18 @@ public class MarketDataActivity extends BaseActivity
             // TODO double-check data URI
             errorString =
                 intent.getStringExtra(FetchService.EXTRA_ERROR_STRING);
-            lastTrades = (Transaction.List)
+            priceHistory = (Transaction.List)
                 intent.getParcelableExtra(FetchService.EXTRA_LAST_TRADES);
-            if(lastTrades != null)
+            if(priceHistory != null)
             {
-                cachedLastTrades = lastTrades;
+                cachedPriceHistory = priceHistory;
             }
-            if(lastTrades == null && errorString == null)
+            if(priceHistory == null && errorString == null)
             {
                 //errorString = getString(R.string.fetch_error_generic);
             }
 
-            completeLastTradesFetch();
+            completePriceHistoryFetch();
         }
     }
 }
