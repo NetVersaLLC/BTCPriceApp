@@ -355,6 +355,11 @@ public class FetchService extends Service
     protected Intent fetchPriceHistory(Intent output, String exchangeName,
             String baseCurrency, String counterCurrency, long historySpan)
     {
+        if(historySpan < 1)
+        {
+            historySpan = prefs.getLong("trades_window",
+                    Defaults.TRADES_WINDOW);
+        }
         fetchLastTrades(output, exchangeName, baseCurrency, counterCurrency, 0,
                 false);
         Transaction.List txs =
@@ -365,7 +370,7 @@ public class FetchService extends Service
         }
         output.removeExtra(EXTRA_LAST_TRADES);
 
-        long now = System.currentTimeMillis();
+        long now = System.currentTimeMillis() / 1000;
 
         Candlestick.List result =
             TransactionAnalysis.toCandlesticks(txs, now - historySpan, now, 20);
