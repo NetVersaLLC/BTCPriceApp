@@ -279,15 +279,36 @@ public class MarketDataActivity extends BaseActivity
             StockSeries series = (StockSeries)
                 chartView.findSeriesByName("candlestick-series-price");
 
+            // find the mean opening price for dummy candlesticks.  Dummies are
+            // used when the data for a span is incomplete since stock-chart
+            // doesn't seem to have a way to insert blank candlestick spaces.
+            double sum = 0;
+            int count = 0;
             for(Candlestick ee : cachedPriceHistory)
             {
+                if(ee.open == Candlestick.NONE)
+                {
+                    continue;
+                }
+                sum += ee.open;
+                count++;
+            }
+            float dummyValue = (float) (sum / count);
+
+            for(Candlestick ee : cachedPriceHistory)
+            {
+                StockPoint point = new StockPoint();
                 if(ee.open != Candlestick.NONE)
                 {
-                    StockPoint point = new StockPoint();
                     point.setValues((float) ee.open, (float) ee.high,
                             (float) ee.low, (float) ee.close);
-                    series.getPoints().add(point);
                 }
+                else
+                {
+                    point.setValues(dummyValue, dummyValue, dummyValue,
+                            dummyValue);
+                }
+                series.getPoints().add(point);
             }
 
             chartView.invalidate();
