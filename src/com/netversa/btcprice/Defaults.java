@@ -28,4 +28,5 @@ public class Defaults
     // 1 day in seconds
     public static final long TRADES_WINDOW = 60l * 60l* 24l;
     public static final int TRADES_INTERVALS = 20;
+    public static final int CANDLESTICK_COUNT = 50;
 }

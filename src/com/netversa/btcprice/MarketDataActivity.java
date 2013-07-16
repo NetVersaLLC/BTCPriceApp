@@ -169,7 +169,7 @@ public class MarketDataActivity extends BaseActivity
                 baseCurrency, counterCurrency);
 
         FetchService.requestHistory(this, priceHistoryReceiver, exchangeName,
-                baseCurrency, counterCurrency, 0);
+                baseCurrency, counterCurrency, 0, 0);
 
         if(!resuming)
         {

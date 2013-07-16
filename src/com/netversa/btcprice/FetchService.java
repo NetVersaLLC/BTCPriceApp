@@ -69,7 +69,7 @@ public class FetchService extends Service
     public static final String LAST_TRADES_URI_FORMAT = DATA_SCHEME +
         "://%s/" + LAST_TRADES_ACTION + "/%s/%s/%d";
     public static final String PRICE_HISTORY_URI_FORMAT = DATA_SCHEME +
-        "://%s/" + PRICE_HISTORY_ACTION + "/%s/%s/%d";
+        "://%s/" + PRICE_HISTORY_ACTION + "/%s/%s/%d/%d";
 
     protected ActiveTargetSet activeTargets;
     // exchanges are probably cached by the ExchangeFactory singleton, but
@@ -208,11 +208,11 @@ public class FetchService extends Service
         // price history (candlesticks)
         else if(PRICE_HISTORY_ACTION.equalsIgnoreCase(fetchAction))
         {
-            if(arguments.size() != 4)
+            if(arguments.size() != 5)
             {
                 String format =
                     getString(R.string.fetch_error_wrong_arity_format);
-                String errorString = String.format(format, fetchAction, 3);
+                String errorString = String.format(format, fetchAction, 4);
                 resultIntent.putExtra(EXTRA_ERROR_STRING, errorString);
                 sendBroadcast(resultIntent);
                 finalizeFetch(target);
@@ -221,7 +221,9 @@ public class FetchService extends Service
             String baseCurrency = arguments.get(1);
             String counterCurrency = arguments.get(2);
             String spanString = arguments.get(3);
+            String countString = arguments.get(4);
             long historySpan = 0;
+            int candlestickCount = 0;
             try
             {
                 historySpan = Long.parseLong(spanString);
@@ -237,9 +239,24 @@ public class FetchService extends Service
                 finalizeFetch(target);
                 return;
             }
+            try
+            {
+                candlestickCount = Integer.parseInt(countString);
+            }
+            catch(NumberFormatException e)
+            {
+                String format =
+                    getString(R.string.fetch_error_invalid_argument_format);
+                String errorString = String.format(format, countString,
+                        "candlestickCount");
+                resultIntent.putExtra(EXTRA_ERROR_STRING, errorString);
+                sendBroadcast(resultIntent);
+                finalizeFetch(target);
+                return;
+            }
 
             fetchPriceHistory(resultIntent, exchangeName, baseCurrency,
-                    counterCurrency, historySpan);
+                    counterCurrency, historySpan, candlestickCount);
         }
         // unknown action
         else
@@ -353,12 +370,18 @@ public class FetchService extends Service
     }
 
     protected Intent fetchPriceHistory(Intent output, String exchangeName,
-            String baseCurrency, String counterCurrency, long historySpan)
+            String baseCurrency, String counterCurrency, long historySpan,
+            int candlestickCount)
     {
         if(historySpan < 1)
         {
             historySpan = prefs.getLong("trades_window",
                     Defaults.TRADES_WINDOW);
+        }
+        if(candlestickCount < 1)
+        {
+            candlestickCount = prefs.getInt("candlestick_count",
+                    Defaults.CANDLESTICK_COUNT);
         }
         fetchLastTrades(output, exchangeName, baseCurrency, counterCurrency, 0,
                 false);
@@ -373,7 +396,8 @@ public class FetchService extends Service
         long now = System.currentTimeMillis() / 1000;
 
         Candlestick.List result =
-            TransactionAnalysis.toCandlesticks(txs, now - historySpan, now, 20);
+            TransactionAnalysis.toCandlesticks(txs, now - historySpan, now,
+                    candlestickCount);
 
         output.putExtra(EXTRA_PRICE_HISTORY, (Parcelable) result);
 
@@ -424,10 +448,11 @@ public class FetchService extends Service
      * (candlesticks) for an exchange and currency pair.
      */
     public static Uri historyTarget(String exchange, String baseCurrency,
-            String counterCurrency, long historySpan)
+            String counterCurrency, long historySpan, int candlestickCount)
     {
         return Uri.parse(String.format(PRICE_HISTORY_URI_FORMAT, exchange,
-                    baseCurrency, counterCurrency, historySpan));
+                    baseCurrency, counterCurrency, historySpan,
+                    candlestickCount));
     }
 
     /** Helper function to send a market data fetch request to this service.
@@ -461,10 +486,10 @@ public class FetchService extends Service
      */
     public static ComponentName requestHistory(Context context,
             BroadcastReceiver receiver, String exchange, String baseCurrency,
-            String counterCurrency, long historySpan)
+            String counterCurrency, long historySpan, int candlestickCount)
     {
         Uri target = historyTarget(exchange, baseCurrency, counterCurrency,
-                historySpan);
+                historySpan, candlestickCount);
 
         return sendRequest(context, target, receiver);
     }
