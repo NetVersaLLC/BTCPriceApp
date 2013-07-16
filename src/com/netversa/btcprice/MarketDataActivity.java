@@ -32,8 +32,8 @@ public class MarketDataActivity extends BaseActivity
 {
     protected MarketData marketData;
     protected MarketData cachedMarketData;
-    protected List<Transaction> priceHistory;
-    protected List<Transaction> cachedPriceHistory;
+    protected List<Candlestick> priceHistory;
+    protected List<Candlestick> cachedPriceHistory;
     protected String errorString;
     // by when should we be hearing back from FetchService?
     protected long expectResultsBy;
@@ -168,7 +168,7 @@ public class MarketDataActivity extends BaseActivity
         FetchService.requestMarket(this, marketDataReceiver, exchangeName,
                 baseCurrency, counterCurrency);
 
-        FetchService.requestTrades(this, priceHistoryReceiver, exchangeName,
+        FetchService.requestHistory(this, priceHistoryReceiver, exchangeName,
                 baseCurrency, counterCurrency, 0);
 
         if(!resuming)
@@ -276,23 +276,10 @@ public class MarketDataActivity extends BaseActivity
         // better than remaining blank
         if(cachedPriceHistory != null)
         {
-            int intervals = prefs.getInt("trades_intervals",
-                    Defaults.TRADES_INTERVALS);
-            long tradesWindow = prefs.getLong("trades_window",
-                    Defaults.TRADES_WINDOW);
-            long now = System.currentTimeMillis() / 1000;
-
-            long start = now - tradesWindow;
-            long end = now;
-
-            List<Candlestick> candlesticks =
-                TransactionAnalysis.toCandlesticks(cachedPriceHistory, start, end,
-                        intervals);
-
             StockSeries series = (StockSeries)
                 chartView.findSeriesByName("candlestick-series-price");
 
-            for(Candlestick ee : candlesticks)
+            for(Candlestick ee : cachedPriceHistory)
             {
                 if(ee.open != Candlestick.NONE)
                 {
@@ -452,8 +439,8 @@ public class MarketDataActivity extends BaseActivity
             // TODO double-check data URI
             errorString =
                 intent.getStringExtra(FetchService.EXTRA_ERROR_STRING);
-            priceHistory = (Transaction.List)
-                intent.getParcelableExtra(FetchService.EXTRA_LAST_TRADES);
+            priceHistory = (Candlestick.List)
+                intent.getParcelableExtra(FetchService.EXTRA_PRICE_HISTORY);
             if(priceHistory != null)
             {
                 cachedPriceHistory = priceHistory;

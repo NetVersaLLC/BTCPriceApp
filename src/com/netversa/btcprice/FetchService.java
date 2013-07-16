@@ -208,11 +208,11 @@ public class FetchService extends Service
         // price history (candlesticks)
         else if(PRICE_HISTORY_ACTION.equalsIgnoreCase(fetchAction))
         {
-            if(arguments.size() != 3)
+            if(arguments.size() != 4)
             {
                 String format =
                     getString(R.string.fetch_error_wrong_arity_format);
-                String errorString = String.format(format, fetchAction, 2);
+                String errorString = String.format(format, fetchAction, 3);
                 resultIntent.putExtra(EXTRA_ERROR_STRING, errorString);
                 sendBroadcast(resultIntent);
                 finalizeFetch(target);
@@ -415,6 +415,16 @@ public class FetchService extends Service
                     baseCurrency, counterCurrency, sinceTimestamp));
     }
 
+    /** Helper function to produce a data URI to request the price history
+     * (candlesticks) for an exchange and currency pair.
+     */
+    public static Uri historyTarget(String exchange, String baseCurrency,
+            String counterCurrency, long historySpan)
+    {
+        return Uri.parse(String.format(PRICE_HISTORY_URI_FORMAT, exchange,
+                    baseCurrency, counterCurrency, historySpan));
+    }
+
     /** Helper function to send a market data fetch request to this service.
      *  @param receiver BroadcastReceiver that will receive result, or null
      */
@@ -436,6 +446,20 @@ public class FetchService extends Service
     {
         Uri target = tradesTarget(exchange, baseCurrency, counterCurrency,
                 sinceTimestamp);
+
+        return sendRequest(context, target, receiver);
+    }
+
+    /** Helper function to send a price history (candlesticks) fetch request to
+     * this service.
+     *  @param receiver BroadcastReceiver that will receive result, or null
+     */
+    public static ComponentName requestHistory(Context context,
+            BroadcastReceiver receiver, String exchange, String baseCurrency,
+            String counterCurrency, long historySpan)
+    {
+        Uri target = historyTarget(exchange, baseCurrency, counterCurrency,
+                historySpan);
 
         return sendRequest(context, target, receiver);
     }
