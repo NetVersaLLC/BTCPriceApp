@@ -32,8 +32,8 @@ public class MarketDataActivity extends BaseActivity
 {
     protected MarketData marketData;
     protected MarketData cachedMarketData;
-    protected List<Candlestick> priceHistory;
-    protected List<Candlestick> cachedPriceHistory;
+    protected Candlestick.List priceHistory;
+    protected Candlestick.List cachedPriceHistory;
     protected String errorString;
     // by when should we be hearing back from FetchService?
     protected long expectResultsBy;
@@ -92,6 +92,10 @@ public class MarketDataActivity extends BaseActivity
                 savedInstanceState.getParcelable("marketData");
             cachedMarketData = (MarketData)
                 savedInstanceState.getParcelable("cachedMarketData");
+            priceHistory = (Candlestick.List)
+                savedInstanceState.getParcelable("priceHistory");
+            cachedPriceHistory = (Candlestick.List)
+                savedInstanceState.getParcelable("cachedPriceHistory");
             errorString = savedInstanceState.getString("errorString");
             expectResultsBy = savedInstanceState.getLong("expectResultsBy");
         }
@@ -394,6 +398,9 @@ public class MarketDataActivity extends BaseActivity
 
         savedInstanceState.putParcelable("marketData", marketData);
         savedInstanceState.putParcelable("cachedMarketData", cachedMarketData);
+        savedInstanceState.putParcelable("priceHistory", priceHistory);
+        savedInstanceState.putParcelable("cachedPriceHistory",
+                cachedPriceHistory);
         savedInstanceState.putString("errorString", errorString);
         savedInstanceState.putLong("expectResultsBy", expectResultsBy);
     }
