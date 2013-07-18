@@ -195,6 +195,12 @@ public class MarketDataActivity extends BaseActivity
         highPriceView.setText(R.string.high_price_dummy);
         lowPriceView.setText(R.string.low_price_dummy);
         volumeView.setText(R.string.volume_dummy);
+
+
+        StockSeries series = (StockSeries)
+            chartView.findSeriesByName("candlestick-series-price");
+        series.getPoints().clear();
+        chartView.invalidate();
     }
 
     /** Clean up after a market data refresh and display content.
@@ -361,14 +367,21 @@ public class MarketDataActivity extends BaseActivity
         area.setName("candlestick-area");
         area.setTitle("");
 
+        area.getAppearance().setPrimaryFillColor(Color.TRANSPARENT);
+        area.getAppearance().setOutlineWidth(0.0f);
+        area.getAppearance().setOutlineColor(0);
+        area.getPlot().getAppearance().getFont().setSize(30.0f);
+
         area.getLeftAxis().setVisible(false);
-        area.getRightAxis().setVisible(false);
+        area.getRightAxis().setVisible(true);
         area.getTopAxis().setVisible(false);
         area.getBottomAxis().setVisible(false);
         area.getLeftAxis().setLinesCount(0);
-        area.getRightAxis().setLinesCount(0);
+        area.getRightAxis().setLinesCount(3);
         area.getBottomAxis().setLinesCount(0);
         area.getTopAxis().setLinesCount(0);
+        area.getRightAxis().setDrawMaxMin(true);
+        area.getRightAxis().setDefaultLabelFormat("0.00");
         area.setAutoHeight(true);
 
         chartView.getAreas().add(area);
