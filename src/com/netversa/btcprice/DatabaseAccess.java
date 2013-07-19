@@ -12,11 +12,11 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-public class Database extends SQLiteOpenHelper
+public class DatabaseAccess extends SQLiteOpenHelper
 {
     protected Context context;
 
-    public Database(Context context_)
+    public DatabaseAccess(Context context_)
     {
         super(context_, DATABASE_NAME, null, DATABASE_VERSION);
         context = context_;
