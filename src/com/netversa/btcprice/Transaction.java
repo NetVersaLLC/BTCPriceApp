@@ -23,10 +23,11 @@ public class Transaction implements Parcelable
     public final String counterCurrency;
     public final BigDecimal price;
     public final Date timestamp;
+    public final long id;
 
     public Transaction(String type_, BigDecimal quantity_,
             String baseCurrency_, String counterCurrency_, BigDecimal price_,
-            Date timestamp_)
+            Date timestamp_, long id_)
     {
         type = type_;
         quantity = quantity_;
@@ -34,6 +35,7 @@ public class Transaction implements Parcelable
         counterCurrency = counterCurrency_;
         price = price_;
         timestamp = timestamp_;
+        id = id_;
     }
 
     @Override
@@ -60,7 +62,8 @@ public class Transaction implements Parcelable
                 !eq(rhs.baseCurrency, baseCurrency) ||
                 !eq(rhs.counterCurrency, counterCurrency) ||
                 !eq(rhs.price, price) ||
-                !eq(rhs.timestamp, timestamp))
+                !eq(rhs.timestamp, timestamp) ||
+                rhs.id != id)
         {
             return false;
         }
@@ -95,6 +98,7 @@ public class Transaction implements Parcelable
                 counterCurrency.hashCode() : 0) * 7;
         output += (price != null ? price.hashCode() : 0) * 11;
         output += (timestamp != null ? timestamp.hashCode() : 0) * 13;
+        output += (id) * 17;
         return output;
     }
 
@@ -113,6 +117,7 @@ public class Transaction implements Parcelable
         out.writeString(counterCurrency);
         out.writeString(price != null ? price.toString() : null);
         out.writeLong(timestamp != null ? timestamp.getTime() : 0);
+        out.writeLong(id);
     }
 
     public static final Parcelable.Creator<Transaction> CREATOR
@@ -143,6 +148,8 @@ public class Transaction implements Parcelable
 
          longtemps = in.readLong();
          timestamp = longtemps != 0 ? new Date(longtemps) : null;
+
+         id = in.readLong();
      }
 
      public static class List

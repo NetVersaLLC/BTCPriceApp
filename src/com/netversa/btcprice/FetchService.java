@@ -362,7 +362,8 @@ public class FetchService extends Service
                 Transaction.BID : Transaction.ASK;
             result.add(new Transaction(type, ee.getTradableAmount(),
                         ee.getTradableIdentifier(), ee.getTransactionCurrency(),
-                        ee.getPrice().getAmount(), ee.getTimestamp()));
+                        ee.getPrice().getAmount(), ee.getTimestamp(),
+                        ee.getId()));
         }
         output.putExtra(EXTRA_LAST_TRADES, (Parcelable) result);
 
