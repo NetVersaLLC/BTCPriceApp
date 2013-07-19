@@ -1,6 +1,6 @@
-DROP TABLE IF EXISTS _trades;
+DROP TABLE IF EXISTS _transactions;
 
-CREATE TABLE _trades (
+CREATE TABLE _transactions (
     _id INTEGER PRIMARY KEY AUTOINCREMENT,
     _type TEXT NOT NULL,
     _amount REAL NOT NULL,
@@ -8,5 +8,5 @@ CREATE TABLE _trades (
     _base TEXT NOT NULL,
     _price REAL NOT NULL,
     _timestamp TEXT NOT NULL,
-    _trade_id TEXT NOT NULL
+    _tx_id TEXT NOT NULL
 );

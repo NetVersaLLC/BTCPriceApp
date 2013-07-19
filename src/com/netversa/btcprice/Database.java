@@ -54,7 +54,7 @@ public class Database extends SQLiteOpenHelper
         }
     }
 
-    public static final String TABLE_TRADES = "_trades";
+    public static final String TABLE_TRANSACTIONS = "_transactions";
 
     public static final String COLUMN_ID = "_id";
     public static final String COLUMN_TYPE = "_type";
@@ -63,7 +63,7 @@ public class Database extends SQLiteOpenHelper
     public static final String COLUMN_BASE = "_base";
     public static final String COLUMN_PRICE = "_price";
     public static final String COLUMN_TIMESTAMP = "_timestamp";
-    public static final String COLUMN_TRADE_ID = "_trade_id";
+    public static final String COLUMN_TX_ID = "_tx_id";
 
     public static final String SCRIPT_CREATE = "sql/btcprice-create.sql";
 
