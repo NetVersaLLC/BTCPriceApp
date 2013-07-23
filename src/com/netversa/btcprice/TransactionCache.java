@@ -8,6 +8,11 @@ import java.util.Iterator;
 
 import android.content.Context;
 
+/**
+ * Cache historical transaction data locally for building candlestick charts
+ * etc.  At least in the case of Mt. Gox, fetching enough historical data to
+ * even create a graph for a day can be very slow.
+ */
 public class TransactionCache
 {
     private Context context;

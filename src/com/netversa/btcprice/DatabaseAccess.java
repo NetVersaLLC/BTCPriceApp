@@ -12,6 +12,9 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+/**
+ * Provide access to the SQLite database, creating it if necessary.
+ */
 public class DatabaseAccess extends SQLiteOpenHelper
 {
     protected Context context;
@@ -75,6 +78,11 @@ public class DatabaseAccess extends SQLiteOpenHelper
     public static final String DATABASE_NAME = "btcprice.db";
     public static final int DATABASE_VERSION = 1;
 
+    /**
+     * Execute a SQL script asset on the database.  This helper function
+     * prevents the necessity of embedding SQL code in Java code, improving
+     * cleanliness and organization.
+     */
     public void execSqlScript(SQLiteDatabase db, String assetName)
         throws IOException
     {
