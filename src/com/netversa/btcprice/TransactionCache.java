@@ -31,12 +31,17 @@ public class TransactionCache
         return 0;
     }
 
-    public Iterator<Transaction> getSince(Date since)
+    public Iterator<Transaction> get()
+    {
+        return get(null);
+    }
+
+    public Iterator<Transaction> get(Date since)
     {
         return null;
     }
 
-    public void add(Iterator<Transaction> inputs)
+    public void put(Iterator<Transaction> inputs)
     {
     }
 
