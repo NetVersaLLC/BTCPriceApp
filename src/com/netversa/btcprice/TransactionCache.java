@@ -63,6 +63,7 @@ public class TransactionCache
 
     public static final String COLUMN_ID = "_id";
     public static final String COLUMN_TYPE = "_type";
+    public static final String COLUMN_EXCHANGE = "_exchange";
     public static final String COLUMN_AMOUNT = "_amount";
     public static final String COLUMN_COUNTER = "_counter";
     public static final String COLUMN_BASE = "_base";

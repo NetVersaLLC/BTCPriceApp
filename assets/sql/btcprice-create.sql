@@ -11,3 +11,12 @@ CREATE TABLE _transactions (
     _timestamp TEXT NOT NULL,
     _tx_id TEXT NOT NULL
 );
+
+DROP TABLE IF EXISTS _price_change_thresholds;
+
+CREATE TABLE _price_change_thresholds (
+    _id INTEGER PRIMARY KEY AUTOINCREMENT,
+    _type TEXT NOT NULL,
+    _exchange TEXT NOT NULL,
+    _amount REAL NOT NULL,
+);

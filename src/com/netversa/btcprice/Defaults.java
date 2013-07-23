@@ -15,6 +15,7 @@ public class Defaults
     // 30 seconds in ms
     public static final long FETCH_TIMEOUT = 30000;
     public static final boolean ONGOING_PRICE = false;
+    public static final boolean PRICE_CHANGE = false;
 
     // 1 minute in ms
     public static final long STALENESS_THRESHOLD = 60000;
