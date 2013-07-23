@@ -6,7 +6,8 @@ package com.netversa.btcprice;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.MissingResourceException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
@@ -17,6 +18,7 @@ import android.database.sqlite.SQLiteOpenHelper;
  */
 public class DatabaseAccess extends SQLiteOpenHelper
 {
+    public static final Pattern commentPattern = Pattern.compile("^(.*?)(--|$)");
     protected Context context;
 
     public DatabaseAccess(Context context_)
@@ -34,8 +36,7 @@ public class DatabaseAccess extends SQLiteOpenHelper
         }
         catch(Exception e)
         {
-            throw new MissingResourceException("error creating database",
-                    "Database", SCRIPT_CREATE);
+            throw new RuntimeException("error executing create SQL", e);
         }
     }
 
@@ -70,7 +71,9 @@ public class DatabaseAccess extends SQLiteOpenHelper
     /**
      * Execute a SQL script asset on the database.  This helper function
      * prevents the necessity of embedding SQL code in Java code, improving
-     * cleanliness and organization.
+     * cleanliness and organization.  execSQL() will only execute the first
+     * statement on a line, so a blank line is necessary between each statement
+     * in the SQL file.
      */
     public void execSqlScript(SQLiteDatabase db, String assetName)
         throws IOException
@@ -84,6 +87,10 @@ public class DatabaseAccess extends SQLiteOpenHelper
 
         while((line = reader.readLine()) != null)
         {
+            Matcher preCommentMatcher = commentPattern.matcher(line);
+            preCommentMatcher.find();
+            line = preCommentMatcher.group(1);
+            System.out.println("no comment line: " + line);
             if("".equals(line))
             {
                 if(!"".equals(command))
