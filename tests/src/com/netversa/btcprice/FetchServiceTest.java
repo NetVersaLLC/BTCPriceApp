@@ -46,10 +46,12 @@ public class FetchServiceTest extends ServiceTestCase<FetchService>
                 new Date(1369196546000l));
         trades = new ArrayList<Transaction>();
         trades.add(new Transaction(Transaction.BID, new BigDecimal("9001.00"),
-                    "BTC", "USD", new BigDecimal("1"), new Date(1369197546000l)));
+                    "BTC", "USD", new BigDecimal("1"), new Date(1369197546000l),
+                    8675309));
 
         mockExchangeCache = new ConcurrentHashMap<String, Exchange>();
-        mockExchangeCache.put(Exchanges.MT_GOX, new MockExchange(marketData, trades));
+        mockExchangeCache.put(Exchanges.MT_GOX, new MockExchange(marketData,
+                    trades));
     }
 
     protected void setUp() throws Exception
@@ -227,7 +229,7 @@ public class FetchServiceTest extends ServiceTestCase<FetchService>
     public void testLastTradesFetch() throws Throwable
     {
         final Semaphore completeCondition = new Semaphore(0);
-        String goodTarget = "data://mtgox/trades/BTC/USD";
+        String goodTarget = "data://mtgox/trades/BTC/USD/0";
 
         BroadcastReceiver receiver = new BroadcastReceiver() {
             public void onReceive(Context context, Intent intent) {

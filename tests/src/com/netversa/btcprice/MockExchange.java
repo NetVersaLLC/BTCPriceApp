@@ -7,9 +7,9 @@ import java.util.List;
 
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.ExchangeSpecification;
-import com.xeiam.xchange.service.account.polling.PollingAccountService;
-import com.xeiam.xchange.service.marketdata.polling.PollingMarketDataService;
-import com.xeiam.xchange.service.trade.polling.PollingTradeService;
+import com.xeiam.xchange.service.polling.PollingAccountService;
+import com.xeiam.xchange.service.polling.PollingMarketDataService;
+import com.xeiam.xchange.service.polling.PollingTradeService;
 import com.xeiam.xchange.service.streaming.ExchangeStreamingConfiguration;
 import com.xeiam.xchange.service.streaming.StreamingExchangeService;
 

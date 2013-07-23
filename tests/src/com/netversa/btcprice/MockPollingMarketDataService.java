@@ -18,7 +18,7 @@ import com.xeiam.xchange.dto.marketdata.OrderBook;
 import com.xeiam.xchange.dto.marketdata.Ticker;
 import com.xeiam.xchange.dto.marketdata.Trade;
 import com.xeiam.xchange.dto.marketdata.Trades;
-import com.xeiam.xchange.service.marketdata.polling.PollingMarketDataService;
+import com.xeiam.xchange.service.polling.PollingMarketDataService;
 
 public class MockPollingMarketDataService implements PollingMarketDataService
 {
@@ -79,7 +79,7 @@ public class MockPollingMarketDataService implements PollingMarketDataService
             CurrencyUnit counter = CurrencyUnit.of(ee.counterCurrency);
             result.add(new Trade(type, ee.quantity, ee.baseCurrency,
                         ee.counterCurrency, BigMoney.of(counter, ee.price),
-                        ee.timestamp));
+                        ee.timestamp, ee.id));
         }
 
         return new Trades(result);

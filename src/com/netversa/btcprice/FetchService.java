@@ -29,7 +29,7 @@ import com.xeiam.xchange.dto.marketdata.Ticker;
 import com.xeiam.xchange.dto.marketdata.Trade;
 import com.xeiam.xchange.dto.marketdata.Trades;
 import com.xeiam.xchange.mtgox.v1.MtGoxExchange;
-import com.xeiam.xchange.service.marketdata.polling.PollingMarketDataService;
+import com.xeiam.xchange.service.polling.PollingMarketDataService;
 
 /** Class for fetching Market data decoupled from Activity lifestyles.
  *
@@ -362,7 +362,8 @@ public class FetchService extends Service
                 Transaction.BID : Transaction.ASK;
             result.add(new Transaction(type, ee.getTradableAmount(),
                         ee.getTradableIdentifier(), ee.getTransactionCurrency(),
-                        ee.getPrice().getAmount(), ee.getTimestamp()));
+                        ee.getPrice().getAmount(), ee.getTimestamp(),
+                        ee.getId()));
         }
         output.putExtra(EXTRA_LAST_TRADES, (Parcelable) result);
 
