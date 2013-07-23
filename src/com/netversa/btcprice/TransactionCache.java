@@ -16,11 +16,13 @@ import android.content.Context;
 public class TransactionCache
 {
     private Context context;
+    private String exchangeName;
     private DatabaseAccess dbAccess;
 
-    public TransactionCache(Context context_)
+    public TransactionCache(Context context_, String exchangeName_)
     {
         context = context_;
+        exchangeName = exchangeName_;
         dbAccess = new DatabaseAccess(context);
     }
 
@@ -40,5 +42,10 @@ public class TransactionCache
 
     public void cull(Date before)
     {
+    }
+
+    public String getExchangeName()
+    {
+        return exchangeName;
     }
 }
