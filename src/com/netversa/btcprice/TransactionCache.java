@@ -26,6 +26,11 @@ public class TransactionCache
         dbAccess = new DatabaseAccess(context);
     }
 
+    public int size()
+    {
+        return 0;
+    }
+
     public long getLatestTxId()
     {
         return 0;
