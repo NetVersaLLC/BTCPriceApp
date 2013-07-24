@@ -3,6 +3,9 @@
  */
 package com.netversa.btcprice;
 
+import android.content.ContentValues;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,15 +29,72 @@ public class PriceChangeData
 
     public List<Threshold> getThresholds()
     {
-        return new ArrayList<Threshold>();
+        List<Threshold> output = new ArrayList<Threshold>();
+
+        SQLiteDatabase db = dbAccess.getReadableDatabase();
+        try
+        {
+            Cursor c = db.query(TABLE_THRESHOLDS,
+                    new String[] { COLUMN_TYPE, COLUMN_AMOUNT },
+                    COLUMN_EXCHANGE + " = ?", new String[] { exchangeName },
+                    null, null, null);
+
+            try
+            {
+                while(c.moveToNext())
+                {
+                    output.add(new Threshold(c.getDouble(1), c.getInt(0)));
+                }
+            }
+            finally
+            {
+                c.close();
+            }
+        }
+        finally
+        {
+            db.close();
+        }
+
+        return output;
     }
 
     public void clearThresholds()
     {
+        SQLiteDatabase db = dbAccess.getWritableDatabase();
+
+        try
+        {
+            db.delete(TABLE_THRESHOLDS, COLUMN_EXCHANGE + " = ?",
+                    new String[] { exchangeName });
+        }
+        finally
+        {
+            db.close();
+        }
     }
     
     public void setThresholds(List<Threshold> thresholds)
     {
+        clearThresholds();
+
+        SQLiteDatabase db = dbAccess.getWritableDatabase();
+        
+        try
+        {
+            for(Threshold ee : thresholds)
+            {
+                ContentValues values = new ContentValues();
+                values.put(COLUMN_TYPE, ee.type);
+                values.put(COLUMN_AMOUNT, ee.amount);
+                values.put(COLUMN_EXCHANGE, exchangeName);
+                db.insertOrThrow(TABLE_THRESHOLDS, COLUMN_ID, values);
+            }
+        }
+        finally
+        {
+            db.close();
+        }
     }
 
     public String getExchangeName()
@@ -53,12 +113,12 @@ public class PriceChangeData
         public static final int ABSOLUTE = 0;
         public static final int RELATIVE = 1;
 
-        public final double magnitude;
+        public final double amount;
         public final int type;
 
-        public Threshold(double magnitude_, int type_)
+        public Threshold(double amount_, int type_)
         {
-            magnitude = magnitude_;
+            amount = amount_;
             type = type_;
         }
     }
