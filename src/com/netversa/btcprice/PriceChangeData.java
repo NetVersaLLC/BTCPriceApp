@@ -97,6 +97,59 @@ public class PriceChangeData
         }
     }
 
+    public double getLastBasis()
+    {
+        SQLiteDatabase db = dbAccess.getReadableDatabase();
+
+        double result = -1;
+
+        try
+        {
+            Cursor c = db.query(TABLE_BASES,
+                    new String[] { COLUMN_AMOUNT },
+                    COLUMN_EXCHANGE + " = ?", new String[] { exchangeName },
+                    null, null, null);
+
+            try
+            {
+                if(c.getCount() < 1)
+                {
+                    return -1;
+                }
+
+                c.moveToFirst();
+                result = c.getDouble(0);
+            }
+            finally
+            {
+                c.close();
+            }
+        }
+        finally
+        {
+            db.close();
+        }
+
+        return result;
+    }
+
+    public void setLastBasis(double basis)
+    {
+        SQLiteDatabase db = dbAccess.getWritableDatabase();
+
+        try
+        {
+            ContentValues values = new ContentValues();
+            values.put(COLUMN_AMOUNT, basis);
+            values.put(COLUMN_EXCHANGE, exchangeName);
+            db.insertOrThrow(TABLE_BASES, COLUMN_ID, values);
+        }
+        finally
+        {
+            db.close();
+        }
+    }
+
     public String getExchangeName()
     {
         return exchangeName;
@@ -124,6 +177,7 @@ public class PriceChangeData
     }
 
     public static final String TABLE_THRESHOLDS = "_price_change_thresholds";
+    public static final String TABLE_BASES = "_price_change_bases";
 
     public static final String COLUMN_ID = "_id";
     public static final String COLUMN_TYPE = "_type";

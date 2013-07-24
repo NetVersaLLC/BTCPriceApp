@@ -20,3 +20,11 @@ CREATE TABLE _price_change_thresholds (
     _exchange TEXT NOT NULL,
     _amount REAL NOT NULL
 );
+
+DROP TABLE IF EXISTS _price_change_bases;
+
+CREATE TABLE _price_change_bases (
+    _id INTEGER PRIMARY KEY AUTOINCREMENT,
+    _exchange TEXT NOT NULL,
+    _amount REAL NOT NULL
+);
