@@ -3,6 +3,8 @@
  */
 package com.netversa.btcprice;
 
+import java.util.List;
+
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -62,33 +64,70 @@ public class PriceChangeReceiver extends BroadcastReceiver
             return;
         }
 
+        PriceChangeData changeData = new PriceChangeData(context, data.exchangeName);
+
+        double lastPrice = data.lastPrice.doubleValue();
+
+        // the price basis is the last price that represented a significant
+        // change
+        double lastBasis = changeData.getLastBasis();
+        if(lastBasis < 0)
+        {
+            changeData.setLastBasis(lastPrice);
+            return;
+        }
+
+        boolean significant = false;
+        // thresholds define the conditions under which a price change is worth
+        // reporting
+        for(PriceChangeData.Threshold ee : changeData.getThresholds())
+        {
+            double threshold = ee.amount;
+            if(ee.type == PriceChangeData.Threshold.RELATIVE)
+            {
+                threshold *= lastBasis;
+            }
+            if(Math.abs(lastBasis - lastPrice) >= threshold)
+            {
+                significant = true;
+                break;
+            }
+        }
+        if(!significant)
+        {
+            return;
+        }
+
+        double delta = lastPrice - lastBasis;
+        double deltaFrac = delta / lastBasis;
+
         // build and show notification
-        //NotificationManager notifs = (NotificationManager)
-            //context.getSystemService(Context.NOTIFICATION_SERVICE);
-//
-        //String exchangeLabel =
-            //Exchanges.instance().label(context, data.exchangeName);
-        //String valueString =
-            //String.format(context.getString(R.string.ongoing_price_format),
-                    //data.lastPrice, data.counterCurrency);
-        //String currencyString =
-            //String.format(context.getString(R.string.ongoing_currency_format),
-                    //exchangeLabel, data.baseCurrency);
-//
-        //PendingIntent notifIntent = PendingIntent.getActivity(context, 0,
-                //context.getPackageManager().getLaunchIntentForPackage(
-                    //"com.netversa.btcprice"), 0);
-//
-        //if(notifBuilder == null)
-        //{
-            //notifBuilder = new NotificationCompat.Builder(context);
-        //}
-        //notifBuilder.setSmallIcon(R.drawable.ongoing_price_icon)
-               //.setContentTitle(valueString)
-               //.setContentText(currencyString)
-               //.setOngoing(true)
-               //.setContentIntent(notifIntent);
-        //notifs.notify(NOTIF_PRICE_CHANGE, notifBuilder.build());
+        NotificationManager notifs = (NotificationManager)
+            context.getSystemService(Context.NOTIFICATION_SERVICE);
+
+        String exchangeLabel =
+            Exchanges.instance().label(context, data.exchangeName);
+        String valueString =
+            String.format(context.getString(R.string.change_price_format),
+                    delta, deltaFrac * 100.0, data.lastPrice, data.counterCurrency);
+        String currencyString =
+            String.format(context.getString(R.string.ongoing_currency_format),
+                    exchangeLabel, data.baseCurrency);
+
+        PendingIntent notifIntent = PendingIntent.getActivity(context, 0,
+                context.getPackageManager().getLaunchIntentForPackage(
+                    "com.netversa.btcprice"), 0);
+
+        if(notifBuilder == null)
+        {
+            notifBuilder = new NotificationCompat.Builder(context);
+        }
+        notifBuilder.setSmallIcon(R.drawable.ongoing_price_icon)
+               .setContentTitle(valueString)
+               .setContentText(currencyString)
+               .setOngoing(true)
+               .setContentIntent(notifIntent);
+        notifs.notify(NOTIF_PRICE_CHANGE, notifBuilder.build());
     }
 
     public void setNotificationBuilder(NotificationCompat.Builder builder)

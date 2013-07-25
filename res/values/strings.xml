@@ -34,6 +34,9 @@
     <string name="ongoing_price_format" formatted="false">%.2f %s</string>
     <string name="ongoing_currency_format" formatted="false">%s %s</string>
 
+    <string name="change_price_format" formatted="false">%+.2f(%d%%) %.2f %s</string>
+    <string name="change_currency_format" formatted="false">%s %s</string>
+
     <string name="notification_config_title">Notifications</string>
     <string name="notification_config_menu">notifications</string>
 

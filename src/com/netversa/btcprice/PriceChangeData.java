@@ -133,8 +133,25 @@ public class PriceChangeData
         return result;
     }
 
+    public void clearLastBasis()
+    {
+        SQLiteDatabase db = dbAccess.getWritableDatabase();
+
+        try
+        {
+            db.delete(TABLE_BASES, COLUMN_EXCHANGE + " = ?",
+                    new String[] { exchangeName });
+        }
+        finally
+        {
+            db.close();
+        }
+    }
+
     public void setLastBasis(double basis)
     {
+        clearLastBasis();
+
         SQLiteDatabase db = dbAccess.getWritableDatabase();
 
         try
