@@ -64,7 +64,8 @@ public class PriceChangeReceiver extends BroadcastReceiver
             return;
         }
 
-        PriceChangeData changeData = new PriceChangeData(context, data.exchangeName);
+        PriceChangeData changeData = new PriceChangeData(context,
+                data.exchangeName, data.baseCurrency, data.counterCurrency);
 
         double lastPrice = data.lastPrice.doubleValue();
 

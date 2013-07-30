@@ -18,32 +18,60 @@ public class PriceChangeData
 {
     private Context context;
     private String exchangeName;
+    private String baseCurrency;
+    private String counterCurrency;
     private DatabaseAccess dbAccess;
+    private String[] whereAllMatchArgs;
 
-    public PriceChangeData(Context context_, String exchangeName_)
+    public PriceChangeData(Context context_, String exchangeName_,
+            String baseCurrency_, String counterCurrency_)
     {
         context = context_;
         exchangeName = exchangeName_;
+        baseCurrency = baseCurrency_;
+        counterCurrency = counterCurrency_;
         dbAccess = new DatabaseAccess(context);
+        whereAllMatchArgs = new String[] {
+            exchangeName, baseCurrency, counterCurrency
+        };
     }
 
     public List<Threshold> getThresholds()
     {
+        return getThresholds(false);
+    }
+
+    public List<Threshold> getThresholds(boolean includeDisabled)
+    {
         List<Threshold> output = new ArrayList<Threshold>();
 
         SQLiteDatabase db = dbAccess.getReadableDatabase();
+        ArrayList<String> whereArgs = new ArrayList<String>();
+        String where = "TRUE ";
+
+        where += "AND " + COLUMN_EXCHANGE + " = ? ";
+        whereArgs.add(exchangeName);
+        where += "AND " + COLUMN_BASE + " = ? ";
+        whereArgs.add(baseCurrency);
+        where += "AND " + COLUMN_COUNTER + " = ? ";
+        whereArgs.add(counterCurrency);
+        if(!includeDisabled)
+        {
+            where += "AND " + COLUMN_ENABLED + " != 0 ";
+        }
+
         try
         {
             Cursor c = db.query(TABLE_THRESHOLDS,
-                    new String[] { COLUMN_TYPE, COLUMN_AMOUNT },
-                    COLUMN_EXCHANGE + " = ?", new String[] { exchangeName },
-                    null, null, null);
+                    new String[] { COLUMN_TYPE, COLUMN_AMOUNT, COLUMN_ENABLED },
+                    where, whereArgs.toArray(new String[0]), null, null, null);
 
             try
             {
                 while(c.moveToNext())
                 {
-                    output.add(new Threshold(c.getDouble(1), c.getInt(0)));
+                    output.add(new Threshold(c.getDouble(1), c.getInt(0),
+                                c.getInt(2) != 0));
                 }
             }
             finally
@@ -65,8 +93,7 @@ public class PriceChangeData
 
         try
         {
-            db.delete(TABLE_THRESHOLDS, COLUMN_EXCHANGE + " = ?",
-                    new String[] { exchangeName });
+            db.delete(TABLE_THRESHOLDS, WHERE_ALL_MATCH, whereAllMatchArgs);
         }
         finally
         {
@@ -88,6 +115,8 @@ public class PriceChangeData
                 values.put(COLUMN_TYPE, ee.type);
                 values.put(COLUMN_AMOUNT, ee.amount);
                 values.put(COLUMN_EXCHANGE, exchangeName);
+                values.put(COLUMN_BASE, baseCurrency);
+                values.put(COLUMN_COUNTER, counterCurrency);
                 db.insertOrThrow(TABLE_THRESHOLDS, COLUMN_ID, values);
             }
         }
@@ -106,9 +135,8 @@ public class PriceChangeData
         try
         {
             Cursor c = db.query(TABLE_BASES,
-                    new String[] { COLUMN_AMOUNT },
-                    COLUMN_EXCHANGE + " = ?", new String[] { exchangeName },
-                    null, null, null);
+                    new String[] { COLUMN_AMOUNT }, WHERE_ALL_MATCH,
+                    whereAllMatchArgs, null, null, null);
 
             try
             {
@@ -139,8 +167,7 @@ public class PriceChangeData
 
         try
         {
-            db.delete(TABLE_BASES, COLUMN_EXCHANGE + " = ?",
-                    new String[] { exchangeName });
+            db.delete(TABLE_BASES, WHERE_ALL_MATCH, whereAllMatchArgs);
         }
         finally
         {
@@ -159,6 +186,8 @@ public class PriceChangeData
             ContentValues values = new ContentValues();
             values.put(COLUMN_AMOUNT, basis);
             values.put(COLUMN_EXCHANGE, exchangeName);
+            values.put(COLUMN_BASE, baseCurrency);
+            values.put(COLUMN_COUNTER, counterCurrency);
             db.insertOrThrow(TABLE_BASES, COLUMN_ID, values);
         }
         finally
@@ -192,6 +221,16 @@ public class PriceChangeData
         return exchangeName;
     }
 
+    public String getBaseCurrency()
+    {
+        return baseCurrency;
+    }
+
+    public String getCounterCurrency()
+    {
+        return counterCurrency;
+    }
+
     /**
      * A threshold at which a price change is considered significant.  Absolute
      * changes are denominated in the relevant currency; relative changes are
@@ -205,11 +244,13 @@ public class PriceChangeData
 
         public final double amount;
         public final int type;
+        public final boolean enabled;
 
-        public Threshold(double amount_, int type_)
+        public Threshold(double amount_, int type_, boolean enabled_)
         {
             amount = amount_;
             type = type_;
+            enabled = enabled_;
         }
     }
 
@@ -220,4 +261,10 @@ public class PriceChangeData
     public static final String COLUMN_TYPE = "_type";
     public static final String COLUMN_EXCHANGE = "_exchange";
     public static final String COLUMN_AMOUNT = "_amount";
+    public static final String COLUMN_ENABLED = "_enabled";
+    public static final String COLUMN_BASE = "_base";
+    public static final String COLUMN_COUNTER = "_counter";
+
+    private static final String WHERE_ALL_MATCH = COLUMN_EXCHANGE + " = ? " +
+        "AND " + COLUMN_BASE + " = ? " + "AND " + COLUMN_COUNTER + " = ? ";
 }

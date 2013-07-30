@@ -16,8 +16,11 @@ DROP TABLE IF EXISTS _price_change_thresholds;
 
 CREATE TABLE _price_change_thresholds (
     _id INTEGER PRIMARY KEY AUTOINCREMENT,
-    _type TEXT NOT NULL, -- absolute or relative to last price change
+    _enabled INTEGER NOT NULL,
+    _type INTEGER NOT NULL, -- absolute or relative to last price change
     _exchange TEXT NOT NULL,
+    _counter TEXT NOT NULL, -- currency price is listed in
+    _base TEXT NOT NULL, -- commodity being bought or sold
     _amount REAL NOT NULL
 );
 
@@ -26,5 +29,7 @@ DROP TABLE IF EXISTS _price_change_bases;
 CREATE TABLE _price_change_bases (
     _id INTEGER PRIMARY KEY AUTOINCREMENT,
     _exchange TEXT NOT NULL,
+    _counter TEXT NOT NULL, -- currency price is listed in
+    _base TEXT NOT NULL, -- commodity being bought or sold
     _amount REAL NOT NULL
 );
