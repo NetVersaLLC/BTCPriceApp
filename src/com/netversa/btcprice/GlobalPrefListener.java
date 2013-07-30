@@ -32,7 +32,6 @@ public class GlobalPrefListener
             {
                 OngoingPriceReceiver.onStop(ctx);
             }
-            FetchScheduler.instance().reschedule(ctx);
         }
         if("price_change".equals(key))
         {
@@ -44,7 +43,6 @@ public class GlobalPrefListener
             {
                 PriceChangeReceiver.onStop(ctx);
             }
-            FetchScheduler.instance().reschedule(ctx);
         }
     }
 }

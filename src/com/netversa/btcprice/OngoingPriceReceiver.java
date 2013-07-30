@@ -100,13 +100,15 @@ public class OngoingPriceReceiver extends BroadcastReceiver
     public static void onStart(Context context)
     {
         FetchService.requestMarket(context);
+        FetchScheduler.instance().reschedule(context);
     }
 
     public static void onStop(Context context)
     {
         NotificationManager notifs = (NotificationManager)
             context.getSystemService(Context.NOTIFICATION_SERVICE);
-
         notifs.cancel(NOTIF_ONGOING_PRICE);
+
+        FetchScheduler.instance().reschedule(context);
     }
 }
