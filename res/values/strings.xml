@@ -44,4 +44,6 @@
     <string name="pref_ongoing_price_category">Ongoing Price Monitor</string>
     <string name="pref_ongoing_price_title">Always show current price</string>
     <string name="pref_ongoing_price_summary">Show the price as a notification all the time</string>
+    <string name="pref_price_change_category">Price Change Monitor</string>
+    <string name="pref_price_change_title">Notify when prices change</string>
 </resources>

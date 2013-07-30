@@ -40,6 +40,8 @@ public class FetchScheduler
                     "ongoing_price_interval"));
         schedReqPrefs.add(new SchedPrefs("price_widget_active",
                     "price_widget_interval"));
+        schedReqPrefs.add(new SchedPrefs("price_change",
+                    "price_change_interval"));
     }
 
     public static FetchScheduler instance()

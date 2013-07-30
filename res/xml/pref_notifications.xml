@@ -10,4 +10,10 @@
                 android:summary="@string/pref_ongoing_price_summary"
                 />
     </PreferenceCategory>
+    <PreferenceCategory android:title="@string/pref_price_change_category">
+        <CheckBoxPreference
+                android:key="price_change"
+                android:title="@string/pref_price_change_title"
+                />
+    </PreferenceCategory>
 </PreferenceScreen>

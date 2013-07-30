@@ -137,6 +137,7 @@ public class PriceChangeReceiver extends BroadcastReceiver
 
     public static void onStart(Context context)
     {
+        PriceChangeData.clearAllBases(context);
         FetchService.requestMarket(context);
     }
 

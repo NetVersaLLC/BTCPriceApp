@@ -34,5 +34,17 @@ public class GlobalPrefListener
             }
             FetchScheduler.instance().reschedule(ctx);
         }
+        if("price_change".equals(key))
+        {
+            if(prefs.getBoolean(key, Defaults.PRICE_CHANGE))
+            {
+                PriceChangeReceiver.onStart(ctx);
+            }
+            else
+            {
+                PriceChangeReceiver.onStop(ctx);
+            }
+            FetchScheduler.instance().reschedule(ctx);
+        }
     }
 }

@@ -167,6 +167,26 @@ public class PriceChangeData
         }
     }
 
+    /**
+     * Clear the last basis for all currencies and exchanges.  Generally this
+     * is called when price change checks are enabled to prevent stale data
+     * from causing bizarre results the first time.
+     */
+    public static void clearAllBases(Context context)
+    {
+        DatabaseAccess dbAccess = new DatabaseAccess(context);
+        SQLiteDatabase db = dbAccess.getWritableDatabase();
+
+        try
+        {
+            db.delete(TABLE_BASES, null, null);
+        }
+        finally
+        {
+            db.close();
+        }
+    }
+
     public String getExchangeName()
     {
         return exchangeName;
