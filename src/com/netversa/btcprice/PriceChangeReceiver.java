@@ -83,12 +83,7 @@ public class PriceChangeReceiver extends BroadcastReceiver
         // reporting
         for(PriceChangeData.Threshold ee : changeData.getThresholds())
         {
-            double threshold = ee.amount;
-            if(ee.type == PriceChangeData.Threshold.RELATIVE)
-            {
-                threshold *= lastBasis;
-            }
-            if(Math.abs(lastBasis - lastPrice) >= threshold)
+            if(ee.significant(lastBasis, lastPrice))
             {
                 significant = true;
                 break;

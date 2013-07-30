@@ -252,6 +252,16 @@ public class PriceChangeData
             type = type_;
             enabled = enabled_;
         }
+
+        public boolean significant(double prev, double cur)
+        {
+            double threshold = amount;
+            if(type == RELATIVE)
+            {
+                threshold *= prev;
+            }
+            return Math.abs(prev - cur) >= threshold;
+        }
     }
 
     public static final String TABLE_THRESHOLDS = "_price_change_thresholds";
