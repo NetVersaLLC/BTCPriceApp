@@ -15,6 +15,8 @@ public class BasicTestPrefs extends MockSharedPreferences
     public static final long ongoing_price_interval = 15l * 1000l;
     public static final boolean price_widget_active = true;
     public static final long price_widget_interval = 60l * 1000l;
+    public static final boolean price_change = true;
+    public static final long price_change_interval = 15l * 1000l;
 
     @Override
     public boolean getBoolean(String key, boolean defValue)
@@ -26,6 +28,10 @@ public class BasicTestPrefs extends MockSharedPreferences
         else if("price_widget_active".equals(key))
         {
             return price_widget_active;
+        }
+        else if("price_change".equals(key))
+        {
+            return price_change;
         }
 
         throw new IllegalArgumentException();
@@ -60,6 +66,10 @@ public class BasicTestPrefs extends MockSharedPreferences
         if("price_widget_interval".equals(key))
         {
             return price_widget_interval;
+        }
+        if("price_change_interval".equals(key))
+        {
+            return price_change_interval;
         }
 
         throw new IllegalArgumentException();
