@@ -1,0 +1,177 @@
+\documentclass[twocolumn]{article}
+\usepackage[T1]{fontenc}
+\usepackage{cmbright}
+\usepackage{xspace}
+\usepackage{hyperref}
+
+\newcommand{\org}{NetVersa LLC\xspace}
+\newcommand{\app}{Bitcoin Price\xspace}
+\newcommand{\platform}{Android\xspace}
+\newcommand{\onlyexch}{Mt.~Gox\xspace}
+
+\title{\org \\ \app App for \platform}
+\author{Michael Shick \\ \app developer}
+
+\begin{document}
+
+    \maketitle
+
+    \section*{Overview}
+
+    \app for \platform is a clean and functional bitcoin price lookup app based
+    on a powerful, flexible, and extensible engine.
+
+    A quick glance is provided to users upon opening the app in the form of
+    price statistics and a candlestick chart of recent activity.  An optional
+    background service keeps an up-to-date price in the notification bar.
+    Homescreen and lockscreen price widgets are included.  Planned features not
+    yet implemented include a service to watch for significant price changes
+    and candlestick chart widgets.
+
+    Underneath the user interface is a simple but powerful platform for
+    fetching bitcoin price data from various bitcoin exchanges.  Fetches are
+    automatically performed in the background, and simultaneous requests are
+    handled gracefully without duplicating work and putting unnecessary load on
+    exchange APIs.  Additionally, when configured to, \app can receive requests
+    from and provide data to entirely separate \platform apps through the same
+    interface.
+
+    \section*{Features}
+
+    The primary activity of \app displays the most relevant price information
+    collected from the default exchange (currently \onlyexch is supported).
+    Last price, 24-hour high price, 24-hour low price, and 24-hour volume are
+    displayed.  Beneath the price information, a candlestick chart for the last
+    24 hours of price data is displayed to round out a quick picture of the
+    state of the market.
+
+    The ongoing price notification service requests periodic price updates and
+    displays the last trade price in the notification area.  Users can then
+    glance quickly at the notification area from within other apps to check on
+    the price.  Price data can also be placed on either the home or lock
+    screens through simple price widgets.  Placing a widget schedules periodic
+    price updates.
+
+    Although at present only \onlyexch is supported, work to add additional
+    exchanges is minimized by using swappable exchange modules.  Multiple
+    exchanges can be supported simultaneously.
+
+    Whenever a price update is requested by any part of the app, updates happen
+    everywhere else (even outside the app if enabled) automatically.  Even if
+    the ongoing price notification may be set to only update every hour, if a
+    user opens the app to look at the current price, the ongoing notification
+    will be updated simultaneously using the same data.
+
+    Where \app really shines over existing price apps is in the
+    comprehensiveness of its feature set and the extended potential provided by
+    its advanced engine.  Existing bitcoin apps for \platform focus on a single
+    feature, like ongoing price notifications in
+    \href{https://play.google.com/store/apps/details?id=br.eti.fml.satoshi}{Bitcoin
+    Paranoid}, price widgets in
+    \href{https://play.google.com/store/apps/details?id=st.brothas.mtgoxwidget}{Bitcoin
+    Widget}, or price change notifications in
+    \href{https://play.google.com/store/apps/details?id=com.mastah.bitcoinalert}{BitCoin
+    Price Alert}.  \app's planned feature set includes all of these features
+    and others, most of which are wholly or partly implemented currently.
+    Additionally most, if not all, bitcoin \platform apps have UI and graphic
+    design as an afterthought, while \app provides a clean and attractive
+    interface.  Being usable and pleasing to the eye from the perspective of
+    non-technical consumers is key to widespread acceptance and adoption of an
+    app.
+
+    \section*{Technical Description}
+
+    \subsection*{Noteworthy Dependencies}
+
+    The modular exchange interface is provided by the
+    \href{https://github.com/timmolter/XChange}{XChange} library.  By
+    Leveraging an open-source exchange interface library, any time support is
+    added to XChange for a new exchange, only a small amount of code and a
+    modest package size increase are required to support that exchange in \app.
+    The candlestick charts are rendered by
+    \href{https://code.google.com/p/stock-chart/}{stock-chart}.
+
+    \subsection*{Fetch Engine}
+
+    While the implementation of individual features is straightforward, the
+    underlying engine that powers \app represents a significant leap forward
+    for bitcoin apps.
+
+    Data is sent to and from the engine via \platform broadcasts bearing the
+    \texttt{ACTION\_FETCH\_REQUEST} and \texttt{ACTION\_FETCH\_RESPONSE}
+    intents respectively.  While communicating via intent introduces additional
+    requirements like having data types be parcelable, leveraging the enormous
+    flexibility of the intent system provides benefits that far outweigh the
+    burdens.
+
+    The data payload of the intent describes the kind of data to be fetched and
+    from which exchange (e.g.\ \texttt{data://mtgox/market/btc/usd/}).
+
+    When the engine receives a request to fetch data, it first checks to see if
+    a fetch of that URI is already underway, and simply ignores the request if
+    so.  This solves a number of issues, including duplicate requests when a
+    user rotates their phone and an activity is restarted to handle the change.
+    Because fetch results are broadcast, the initiator of the ignored request
+    will get data just the same when the first request is fulfilled.
+
+    When a fetch is completed and the results are broadcast, any currently
+    listening component will receive and act on that data.  Listening
+    components can be inside or outside the app itself; a security directive in
+    the package manifest can restrict access if necessary.  This organization
+    creates a synergy among components interested in the same data: when one is
+    updated, all are updated.
+
+    Background services generally schedule periodic fetches when enabled, and
+    the fetch scheduler will honor the most frequent schedule period.  This has
+    the effect of improving the service of all other background services as
+    they are fulfilled along with the most frequent in a single broadcast.
+
+    \section*{Future Work}
+
+    Much remains that could be added to the framework that supports \app.  Most
+    of the groundwork has been laid, so work from this point on is inherently
+    more fruitful than previous work.
+    Farther down the line third party apps, possibly written by developers
+    unrelated to \org, could be written to take advantage of \app.  In a
+    scenario where third party apps use \app to get their bitcoin data,
+    duplication of labor and therefore introduction of bugs could be
+    significantly curtailed.
+
+    \subsection*{Within \app}
+
+    \begin{description}
+        \item[price change alerts]
+            Work has already begun on price change alerts; upon completion,
+            users could set thresholds for price changes they deem significant
+            and be notified as soon as they happen.
+        \item[price history reports]
+            By creating a recurring service that computes statistics, a simple
+            activity could be added to provide more in-depth statistics to aid
+            in purchasing decisions and market technical analysis.
+        \item[performance]
+            Although \app runs well on even modestly-powered devices, there
+            exist many opportunities to improve speed and responsiveness.  In
+            particular caching of data values could improve user experience
+            across the entire engine.
+        \item[exchange support]
+            UI fixtures and additional XChange libraries are required to expand beyond \onlyexch.
+        \item[currency pair support]
+            UI fixtures are required to support currency pairs beyond BTC/USD.
+    \end{description}
+
+    \subsection*{In other apps}
+
+    As mentioned previously, apps outside of \app can leverage the fetching
+    capabilities of the \app engine.  If desired, services can be extended only
+    to \org apps, or to any interested apps as the cornerstone of a common
+    bitcoin price system for \platform.  A common price system could both
+    improve the bitcoin app ecosystem and bring attention and prestige to \org.
+
+    The reverse relationship is also possible through the intent broadcast
+    system: third party apps could extend \app by providing a compatible fetch
+    request interface supporting exchanges not handled by \app.  By committing
+    to a clean external interface, new exchanges could come online day one with
+    plug-in packages that extend \app and allow users to immediately start
+    using the new exchange with their preferred user interface and features.
+
+\end{document}
